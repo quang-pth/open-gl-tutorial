@@ -50,6 +50,60 @@ int main() {
 		return -1;
 	}
 
+	// Vertex Shader object
+	unsigned int vertexShader;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	// Attach vertex shader source to shader object
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
+	// Check if vertex shader is rendered successfully
+	checkComplieShader(vertexShader, "VERTEX");
+
+	// Fragment Shader Object
+	unsigned int fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
+	// Check if vertex shader is rendered successfully
+	checkComplieShader(fragmentShader, "FRAGMENT");
+
+	// Shader Program Object
+	unsigned int shaderProgram;
+	shaderProgram = glCreateProgram();
+	// Attach vertex and fragment shader to Shader program and link them
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+	checkComplieShader(shaderProgram, "PROGRAM");
+	// Delete vertex and fragment shader after linked it to Shader program
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	// Vertices Data
+	float vertices[] = {
+		-0.5f, -0.5f, 0.0f, // left
+		0.5f, -0.5f, 0.0f, // right
+		0.0f, 0.5f, 0.0f, // top
+	};
+
+	unsigned int VAO, VBO;
+	// Create VAO to manage VBO and attributes pointers
+	glGenVertexArrays(1, &VAO);
+	// Create Vertex Buffer Object (VBO) to manage Vertices Data
+	glGenBuffers(1, &VBO); // generate VBO's id
+	glBindVertexArray(VAO); // bind the Vertex Array Object
+	// Bind the corresponding VBO and attributes pointers to VAO
+	glBindBuffer(GL_ARRAY_BUFFER, VBO); 
+	// Store Vertex Data within memory of the GPU as managed by VBO 
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	// Configure the vertex attributes pointers
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // enable the vertex position attribute
+	
+	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO after it's registered to VAO
+	glBindVertexArray(0); // unbind the VAO for later uses
+	// End binding VBO to VAO
+
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
 		// Close GLFW when pressing Escape key
@@ -59,67 +113,20 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
-		// Vertices Data
-		float vertices[] = {
-			-0.5f, -0.5f, 0.0f,
-			0.5f, -0.5f, 0.0f,
-			0.0f, 0.5f, 0.0f,
-		};
-		// Create Vertex Buffer Object (VBO) to manage Vertices Data
-		unsigned int VBO;
-		glGenBuffers(1, &VBO); // generate VBO's id
-		glBindBuffer(GL_ARRAY_BUFFER, VBO); // bound VBO object
-		// Store Vertex Data within memory of the GPU as managed by VBO 
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		// Vertex Shader object
-		unsigned int vertexShader;
-		vertexShader = glCreateShader(GL_VERTEX_SHADER);
-		// Attach vertex shader source to shader object
-		glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
-		glCompileShader(vertexShader);
-		// Check if vertex shader is rendered successfully
-		checkComplieShader(vertexShader, "VERTEX");
-
-		// Fragment Shader
-		unsigned int fragmentShader;
-		fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-		glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-		glCompileShader(fragmentShader);
-		// Check if vertex shader is rendered successfully
-		checkComplieShader(fragmentShader, "FRAGMENT");
-
-		// Shader Program 
-		unsigned int shaderProgram;
-		shaderProgram = glCreateProgram();
-		// Attach vertex and fragment shader to Shader program and link them
-		glAttachShader(shaderProgram, vertexShader);
-		glAttachShader(shaderProgram, fragmentShader);
-		glLinkProgram(shaderProgram);
-		checkComplieShader(shaderProgram, "PROGRAM");
-		// Create VAO
-		unsigned int VAO;
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-		// Bind the corresponding VBO and attributes pointers to VAO
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-		// Configure the vertex attributes pointers
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(0); // enable the vertex position attribute
-		// End binding VBO to VAO
-
-		// Draw Objects by using VAO
+		// Draw a Triangle by using VAO
 		glUseProgram(shaderProgram);
 		glBindVertexArray(VAO);
-		// Delete vertex and fragment shader after linked it to Shader program
-		glDeleteShader(vertexShader);
-		glDeleteShader(fragmentShader);
-
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
 	}
+
+	// de-allocate resources once the program is about to exit
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &VAO);
+	glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
 	return 0;
