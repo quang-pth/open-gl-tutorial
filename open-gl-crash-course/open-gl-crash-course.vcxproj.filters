@@ -26,5 +26,8 @@
     <None Include="VertexShader.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="FragmentShader.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
