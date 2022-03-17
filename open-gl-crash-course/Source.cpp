@@ -96,7 +96,21 @@ int main() {
 		glAttachShader(shaderProgram, fragmentShader);
 		glLinkProgram(shaderProgram);
 		checkComplieShader(shaderProgram, "PROGRAM");
+		// Create VAO
+		unsigned int VAO;
+		glGenVertexArrays(1, &VAO);
+		glBindVertexArray(VAO);
+		// Bind the corresponding VBO and attributes pointers to VAO
+		glBindBuffer(GL_ARRAY_BUFFER, VBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		// Configure the vertex attributes pointers
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(0); // enable the vertex position attribute
+		// End binding VBO to VAO
+
+		// Draw Objects by using VAO
 		glUseProgram(shaderProgram);
+		glBindVertexArray(VAO);
 		// Delete vertex and fragment shader after linked it to Shader program
 		glDeleteShader(vertexShader);
 		glDeleteShader(fragmentShader);
