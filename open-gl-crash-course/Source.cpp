@@ -55,51 +55,46 @@ int main() {
 		std::cout << "Failed to init GLAD" << std::endl;
 		return -1;
 	}
-
-	// Vertex Shader object
+	
 	unsigned int vertexShader;
+	unsigned int orangeFragmentShader;
+	unsigned int yellowFragmentShader;
+	unsigned int orangeShaderProgram;
+	unsigned int yellowShaderProgram;
+
 	vertexShader = glCreateShader(GL_VERTEX_SHADER);
-	// Attach vertex shader source to shader object
+	orangeFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	yellowFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	orangeShaderProgram = glCreateProgram();
+	yellowShaderProgram = glCreateProgram();
+
 	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
 	glCompileShader(vertexShader);
-	// Check if vertex shader is rendered successfully
 	checkComplieShader(vertexShader, "VERTEX");
 
-	// Fragment Shader Object
-	unsigned int fragmentShader;
-	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(fragmentShader, 1, &fragmentShaderOriginalSource, NULL);
-	glCompileShader(fragmentShader);
-	// Check if vertex shader is rendered successfully
-	checkComplieShader(fragmentShader, "FRAGMENT");
+	glShaderSource(orangeFragmentShader, 1, &fragmentShaderOriginalSource, NULL);
+	glCompileShader(orangeFragmentShader);
+	checkComplieShader(orangeFragmentShader, "FRAGMENT");
 
-	// Shader Program Object
-	unsigned int shaderProgram;
-	shaderProgram = glCreateProgram();
-	// Attach vertex and fragment shader to Shader program and link them
-	glAttachShader(shaderProgram, vertexShader);
-	glAttachShader(shaderProgram, fragmentShader);
-	glLinkProgram(shaderProgram);
-	checkComplieShader(shaderProgram, "PROGRAM");
-
-	// Yellow Fragment Shader Object
-	unsigned int yellowFragmentShader;
-	yellowFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
 	glShaderSource(yellowFragmentShader, 1, &yellowFragmentShaderSource, NULL);
 	glCompileShader(yellowFragmentShader);
-	// Check if vertex shader is rendered successfully
 	checkComplieShader(yellowFragmentShader, "FRAGMENT");
-	// Shader Program Object
-	unsigned int yellowShaderProgram;
-	yellowShaderProgram = glCreateProgram();
-	// Attach vertex and fragment shader to Shader program and link them
+
+	// ORANGE Shader Program Object
+	glAttachShader(orangeShaderProgram, vertexShader);
+	glAttachShader(orangeShaderProgram, orangeFragmentShader);
+	glLinkProgram(orangeShaderProgram);
+	checkComplieShader(orangeShaderProgram, "PROGRAM");
+
+	// YELLOW Shader Program Object
 	glAttachShader(yellowShaderProgram, vertexShader);
 	glAttachShader(yellowShaderProgram, yellowFragmentShader);
 	glLinkProgram(yellowShaderProgram);
 	checkComplieShader(yellowShaderProgram, "PROGRAM");
-	// Delete vertex and fragment shader after linked it to Shader program
+	
+	// Delete vertex and fragment shaders after linked it to shader program
 	glDeleteShader(vertexShader);
-	glDeleteShader(fragmentShader);
+	glDeleteShader(orangeFragmentShader);
 	glDeleteShader(yellowFragmentShader);
 
 	// Vertices Data
@@ -118,19 +113,14 @@ int main() {
 	};
 
 	// START BINDING CALLS
-	unsigned int VAO1, VBO1;
-	// Create VAO to manage EBO, VBO and attributes pointers
-	glGenVertexArrays(1, &VAO1);
-	// Create Vertex Buffer Object (VBO) to manage Vertices Data
-	glGenBuffers(1, &VBO1); // generate VBO's id
-	glBindVertexArray(VAO1); // bind the Vertex Array Object
+	unsigned int VAOs[2], VBOs[2];
+	glGenVertexArrays(2, VAOs);
+	glGenBuffers(2, VBOs);
+	glBindVertexArray(VAOs[0]);
 	
-	// Bound VBO to the GL_ARRAY_BUFFER and bind the corresponding VBO and attributes pointers to VAO
-	glBindBuffer(GL_ARRAY_BUFFER, VBO1);
-	// Store Vertex Data within memory of the GPU as managed by VBO 
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
 	
-	// Configure the vertex attributes pointers on VBO
 	glVertexAttribPointer(0, 3 /*attribute size*/, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /*stride*/, (void*)0);
 	glEnableVertexAttribArray(0); // enable the vertex position attribute
 	
@@ -138,29 +128,17 @@ int main() {
 	glBindVertexArray(0); // unbind the VAO for later uses
 	// END BINDING CALLS
 
-		// START BINDING CALLS
-	unsigned int VAO2, VBO2;
-	// Create VAO to manage EBO, VBO and attributes pointers
-	glGenVertexArrays(1, &VAO2);
-	// Create Vertex Buffer Object (VBO) to manage Vertices Data
-	glGenBuffers(1, &VBO2); // generate VBO's id
-	glBindVertexArray(VAO2); // bind the Vertex Array Object
-
-	// Bound VBO to the GL_ARRAY_BUFFER and bind the corresponding VBO and attributes pointers to VAO
-	glBindBuffer(GL_ARRAY_BUFFER, VBO2);
-	// Store Vertex Data within memory of the GPU as managed by VBO 
+	// START BINDING CALLS
+	glBindVertexArray(VAOs[1]);
+	glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
 
-	// Configure the vertex attributes pointers on VBO
-	glVertexAttribPointer(0, 3 /*attribute size*/, GL_FLOAT, GL_FALSE, 3 * sizeof(float) /*stride*/, (void*)0);
-	glEnableVertexAttribArray(0); // enable the vertex position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO after it's registered to VAO
 	glBindVertexArray(0); // unbind the VAO for later uses
 	// END BINDING CALLS
-	
-	// Set drawing mode
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -172,14 +150,14 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
 		// Draw original triangle
-		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO1);
+		glUseProgram(orangeShaderProgram);
+		glBindVertexArray(VAOs[0]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 
 		// Use yellowShaderProgram to draw yellow triangle
 		glUseProgram(yellowShaderProgram);
-		glBindVertexArray(VAO2);
+		glBindVertexArray(VAOs[1]);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 
@@ -188,15 +166,10 @@ int main() {
 		glfwPollEvents();
 	}
 
-	// Reset drawing mode
-	// glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-
 	// de-allocate resources once the program is about to exit
-	glDeleteBuffers(1, &VBO1);
-	glDeleteBuffers(1, &VAO1);	
-	glDeleteBuffers(1, &VBO2);
-	glDeleteBuffers(1, &VAO2);
-	glDeleteProgram(shaderProgram);
+	glDeleteBuffers(2, VAOs);
+	glDeleteBuffers(2, VBOs);
+	glDeleteProgram(orangeShaderProgram);
 	glDeleteProgram(yellowShaderProgram);
 
 	glfwTerminate();
