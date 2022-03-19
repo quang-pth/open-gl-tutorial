@@ -81,28 +81,47 @@ int main() {
 
 	// Vertices Data
 	float vertices[] = {
-		-0.5f, -0.5f, 0.0f, // left
-		0.5f, -0.5f, 0.0f, // right
-		0.0f, 0.5f, 0.0f, // top
+		0.5f, 0.5f, 0.0f, // top right
+		0.5f, -0.5f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, // bottom left
+		-0.5f, 0.5f, 0.0f, // top left
 	};
 
-	unsigned int VAO, VBO;
-	// Create VAO to manage VBO and attributes pointers
+	unsigned int indices[] = { // the order to draw indices starts from 0
+		0, 1, 3, // first triangle
+		1, 2, 3, // second triangle
+	};
+
+	// START BINDING CALLS
+	unsigned int VAO, VBO, EBO;
+	// Create VAO to manage EBO, VBO and attributes pointers
 	glGenVertexArrays(1, &VAO);
 	// Create Vertex Buffer Object (VBO) to manage Vertices Data
 	glGenBuffers(1, &VBO); // generate VBO's id
+	glGenBuffers(1, &EBO); // generate EBO's id
 	glBindVertexArray(VAO); // bind the Vertex Array Object
-	// Bind the corresponding VBO and attributes pointers to VAO
-	glBindBuffer(GL_ARRAY_BUFFER, VBO); 
+	
+	// Bound VBO to the GL_ARRAY_BUFFER and bind the corresponding VBO and attributes pointers to VAO
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 	// Store Vertex Data within memory of the GPU as managed by VBO 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// Configure the vertex attributes pointers
+	
+	// Bound EBO to the GL_ELEMENT_ARRAY_BUFFER and bind it to the VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); 
+	// Store indices within memory of the GPU as managed by EBO
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	
+	// Configure the vertex attributes pointers on VBO
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0); // enable the vertex position attribute
 	
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO after it's registered to VAO
 	glBindVertexArray(0); // unbind the VAO for later uses
-	// End binding VBO to VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // unbind the EBO after stored
+	// END BINDING CALLS
+	
+	// Set drawing mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -113,19 +132,24 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
-		// Draw a Triangle by using VAO
 		glUseProgram(shaderProgram);
+		// Draw a Triangle by using VAO
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
 	}
 
+	// Reset drawing mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
 	// de-allocate resources once the program is about to exit
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &VAO);
+	glDeleteBuffers(1, &EBO);
 	glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
