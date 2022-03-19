@@ -29,5 +29,8 @@
     <None Include="FragmentShader.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="YellowFragmentShader.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
