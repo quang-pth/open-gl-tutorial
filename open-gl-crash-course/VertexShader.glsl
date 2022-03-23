@@ -6,6 +6,6 @@ layout (location = 1) in vec3 aColor; // color attribute
 out vec3 ourColor; 
 
 void main() {
-	gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);
+	gl_Position = vec4(aPos.x, -aPos.y, aPos.z, 1.0);
 	ourColor = aColor;
 }
