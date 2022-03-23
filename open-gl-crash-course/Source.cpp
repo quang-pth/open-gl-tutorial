@@ -11,15 +11,18 @@ const unsigned int SCR_HEIGHT = 600;
 
 const char* vertexShaderSource = "#version 330 core\n"
 	"layout (location = 0) in vec3 aPos;\n"
+	"layout (location = 1) in vec3 aColor;\n"
+	"out vec3 ourColor;\n"
 	"void main() {\n"
 	"gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n"
+	"ourColor = aColor;\n"
 	"}\0"
 ;
 const char* fragmentShaderSource = "#version 330 core\n"
 	"out vec4 FragColor;\n"
-	"uniform vec4 ourColor;\n"
+	"in vec3 ourColor;\n"
 	"void main() {\n"
-	"FragColor = ourColor;\n"
+	"FragColor = vec4(ourColor, 1.0);\n"
 	"}\0"
 ;
 
@@ -83,24 +86,18 @@ int main() {
 
 	// Vertices Data
 	float vertices[] = {
-		// positions		
-		0.5f, -0.5f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f, // bottom left
-		0.0f, 0.5f, 0.0f,  // top
-	};
-
-	unsigned int indices[] = { // the order to draw indices starts from 0
-		0, 1, 3, // first triangle
-		1, 2, 3, // second triangle
+		// positions		// colors
+		0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
+		0.0f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f  // top
 	};
 
 	// START BINDING CALLS
-	unsigned int VAO, VBO, EBO;
+	unsigned int VAO, VBO;
 	// Create VAO to manage EBO, VBO and attributes pointers
 	glGenVertexArrays(1, &VAO);
 	// Create Vertex Buffer Object (VBO) to manage Vertices Data
 	glGenBuffers(1, &VBO); // generate VBO's id
-	glGenBuffers(1, &EBO); // generate EBO's id
 	glBindVertexArray(VAO); // bind the Vertex Array Object
 	
 	// Bound VBO to the GL_ARRAY_BUFFER and bind the corresponding VBO and attributes pointers to VAO
@@ -108,18 +105,15 @@ int main() {
 	// Store Vertex Data within memory of the GPU as managed by VBO 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 	
-	// Bound EBO to the GL_ELEMENT_ARRAY_BUFFER and bind it to the VAO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); 
-	// Store indices within memory of the GPU as managed by EBO
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-	
-	// Configure the vertex attributes pointers on VBO
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	// Configure the POSITION vertex attributes pointers on VBO
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0); // enable the vertex position attribute
-	
+	// Configure the COLOR vertex attributes pointers on VBO
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)) /*offset after the position attribute*/);
+	glEnableVertexAttribArray(1);
+
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO after it's registered to VAO
 	glBindVertexArray(0); // unbind the VAO for later uses
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // unbind the EBO after stored
 	// END BINDING CALLS
 	
 	// Render loop
@@ -132,13 +126,6 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
 		glUseProgram(shaderProgram);
-		float timeValue = glfwGetTimerValue();
-		float greenValue = static_cast<float>(sin(timeValue) / 2.0f + 0.5f);
-		// Get uniform attribute location
-		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor"); // return -1 if not found
-		// Set color for uniform attribute as rgba format
-		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
-
 		// Draw a Triangle by using VAO
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -152,7 +139,6 @@ int main() {
 	// de-allocate resources once the program is about to exit
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &VAO);
-	glDeleteBuffers(1, &EBO);
 	glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
