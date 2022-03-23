@@ -83,8 +83,6 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
 		ourShader.use();
-		// Set uniform value after shader program did run otherwise not work
-		ourShader.setFloat("xOffset", 0.3f);
 		// Draw a Triangle by using VAO
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
