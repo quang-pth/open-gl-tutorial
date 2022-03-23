@@ -8,6 +8,7 @@ void checkComplieShader(GLuint shader, std::string shaderType);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
 const char* vertexShaderSource = "#version 330 core\n"
 	"layout (location = 0) in vec3 aPos;\n"
 	"void main() {\n"
@@ -16,8 +17,9 @@ const char* vertexShaderSource = "#version 330 core\n"
 ;
 const char* fragmentShaderSource = "#version 330 core\n"
 	"out vec4 FragColor;\n"
+	"uniform vec4 ourColor;\n"
 	"void main() {\n"
-	"FragColor = vec4(1.0f, 0.5f, 0.2f, 1.0f);\n"
+	"FragColor = ourColor;\n"
 	"}\0"
 ;
 
@@ -81,10 +83,10 @@ int main() {
 
 	// Vertices Data
 	float vertices[] = {
-		0.5f, 0.5f, 0.0f, // top right
+		// positions		
 		0.5f, -0.5f, 0.0f, // bottom right
 		-0.5f, -0.5f, 0.0f, // bottom left
-		-0.5f, 0.5f, 0.0f, // top left
+		0.0f, 0.5f, 0.0f,  // top
 	};
 
 	unsigned int indices[] = { // the order to draw indices starts from 0
@@ -120,9 +122,6 @@ int main() {
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // unbind the EBO after stored
 	// END BINDING CALLS
 	
-	// Set drawing mode
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
 		// Close GLFW when pressing Escape key
@@ -133,18 +132,22 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
 		glUseProgram(shaderProgram);
+		float timeValue = glfwGetTimerValue();
+		float greenValue = static_cast<float>(sin(timeValue) / 2.0f + 0.5f);
+		// Get uniform attribute location
+		int vertexColorLocation = glGetUniformLocation(shaderProgram, "ourColor"); // return -1 if not found
+		// Set color for uniform attribute as rgba format
+		glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+
 		// Draw a Triangle by using VAO
 		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
 	}
-
-	// Reset drawing mode
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
 	// de-allocate resources once the program is about to exit
 	glDeleteBuffers(1, &VBO);
