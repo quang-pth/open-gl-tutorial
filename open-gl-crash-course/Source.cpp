@@ -41,6 +41,24 @@ int main() {
 	// Build and Compile shader
 	Shader ourShader("VertexShader.glsl", "FragmentShader.glsl");
 
+	// Texture Coordinates Data (texture coordinates range from 0 to 1)
+	float texCoords[] = {
+		0.0f, 0.0f, // lower-left corner
+		1.0f, 0.0f, // lower-right corner
+		0.5f, 1.0f, // top-center corner
+	};
+	// Set OpenGL how to sampling the texture
+	// S, T, R (3D texture) => x, y, z axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT); // set mirror mode on texture x axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT); // set mirror mode on texture y axis
+	// Set texture border color
+	float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	// Texture Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // nearst for scale downwards
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
+	// 7.2.1 mipmaps
+	
 	// Vertices Data
 	float vertices[] = {
 		// positions		// colors
