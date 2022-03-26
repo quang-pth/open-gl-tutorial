@@ -2,6 +2,7 @@
 #include<GLFW/glfw3.h>
 #include <iostream>
 #include"Shader.h"
+#include"stb_image.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -41,56 +42,86 @@ int main() {
 	// Build and Compile shader
 	Shader ourShader("VertexShader.glsl", "FragmentShader.glsl");
 
-	// Texture Coordinates Data (texture coordinates range from 0 to 1)
-	float texCoords[] = {
-		0.0f, 0.0f, // lower-left corner
-		1.0f, 0.0f, // lower-right corner
-		0.5f, 1.0f, // top-center corner
-	};
-	// Set OpenGL how to sampling the texture
-	// S, T, R (3D texture) => x, y, z axis
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT); // set mirror mode on texture x axis
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT); // set mirror mode on texture y axis
-	// Set texture border color
-	float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-	// Texture Filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // nearst for scale downwards
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
-	// 7.2.1 mipmaps
-	
 	// Vertices Data
 	float vertices[] = {
-		// positions		// colors
-		0.5f, -0.5f, 0.0f,	1.0f, 0.0f, 0.0f, // bottom right
-		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, // bottom left
-		0.0f, 0.5f, 0.0f,   0.0f, 0.0f, 1.0f  // top
+		// positions(-1-1)		// colors				// Texture Coordinates (0-1)
+		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,		1.0f, 1.0f,		// top right
+		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,		1.0f, 0.0f,		// bottom right
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,		0.0f, 0.0f,		// bottom left
+		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,		0.0f, 1.0f		// top left
+	};
+
+	unsigned int indices[] = { // orders to draw the rectangle indices starts from 0
+		0, 1, 3, // first triangle
+		1, 2, 3, // second triangle
 	};
 
 	// START BINDING CALLS
-	unsigned int VAO, VBO;
+	unsigned int VAO, VBO, EBO;
 	// Create VAO to manage EBO, VBO and attributes pointers
 	glGenVertexArrays(1, &VAO);
 	// Create Vertex Buffer Object (VBO) to manage Vertices Data
 	glGenBuffers(1, &VBO); // generate VBO's id
+	glGenBuffers(1, &EBO); // generate EBO's id
 	glBindVertexArray(VAO); // bind the Vertex Array Object
 	
-	// Bound VBO to the GL_ARRAY_BUFFER and bind the corresponding VBO and attributes pointers to VAO
+	// VBO
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	// Store Vertex Data within memory of the GPU as managed by VBO 
 	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	
-	// Configure the POSITION vertex attributes pointers on VBO
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0); // enable the vertex position attribute
-	// Configure the COLOR vertex attributes pointers on VBO
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)) /*offset after the position attribute*/);
-	glEnableVertexAttribArray(1);
+	// EBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO after it's registered to VAO
-	glBindVertexArray(0); // unbind the VAO for later uses
+	// Configure the POSITION vertex attributes
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // enable the vertex position attribute
+	// Configure the COLOR vertex attributes
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)) /*offset after the position attribute*/);
+	glEnableVertexAttribArray(1);
+	// Configure the Texture Coordinate vertex attributes
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
+
+	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
+	glBindVertexArray(0); // unbind VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // unbind EBO
 	// END BINDING CALLS
 	
+	// Create Texture object
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	// Set OpenGL how to sampling the texture
+	// S, T, R (3D texture) => x, y, z axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
+	// Set texture border color
+	float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+	// Texture Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Mipmap filtering for texture get scaled down
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
+	// Load and generate the Texture
+	int width, height, nrChannels;
+	unsigned char* data = stbi_load("Textures/container.jpg", &width, &height, &nrChannels, 0); // get image width, height and color channels
+	if (data) {
+		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
+			GL_RGB /*format to store the image*/, width, height, 0,
+			GL_RGB /*format of the source image*/, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "====================TEXTURE==================" << std::endl;
+		std::cout << "Width: " << width << std::endl;
+		std::cout << "Height: " << height << std::endl;
+		std::cout << "nrChannels: " << nrChannels << std::endl;
+		std::cout << "Failed to load texture: " << stbi_failure_reason() << std::endl;
+		std::cout << "====================TEXTURE==================" << std::endl;
+		stbi_failure_reason();
+	}
+	// Free the image memory
+	stbi_image_free(data);
+
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
 		// Close GLFW when pressing Escape key
@@ -101,9 +132,11 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
 		ourShader.use();
+		// Bind Texture object
+		glBindTexture(GL_TEXTURE_2D, texture);
 		// Draw a Triangle by using VAO
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -113,6 +146,7 @@ int main() {
 
 	// de-allocate resources once the program is about to exit
 	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VAO);
 
 	glfwTerminate();
