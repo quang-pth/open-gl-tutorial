@@ -88,21 +88,20 @@ int main() {
 	// END BINDING CALLS
 	
 	// Create Texture object
-	unsigned int texture;
-	glGenTextures(1, &texture);
-	glBindTexture(GL_TEXTURE_2D, texture);
-	// Set OpenGL how to sampling the texture
+	unsigned int texture[2];
+	glGenTextures(2, texture);
+	// Texture Object 1
+	glBindTexture(GL_TEXTURE_2D, texture[0]);
+	// Set the texture wrapping parameters
 	// S, T, R (3D texture) => x, y, z axis
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
-	// Set texture border color
-	float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
-	glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-	// Texture Filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR); // Mipmap filtering for texture get scaled down
+	// Set Texture Filtering parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
 	// Load and generate the Texture
 	int width, height, nrChannels;
+	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
 	unsigned char* data = stbi_load("Textures/container.jpg", &width, &height, &nrChannels, 0); // get image width, height and color channels
 	if (data) {
 		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
@@ -117,10 +116,41 @@ int main() {
 		std::cout << "nrChannels: " << nrChannels << std::endl;
 		std::cout << "Failed to load texture: " << stbi_failure_reason() << std::endl;
 		std::cout << "====================TEXTURE==================" << std::endl;
-		stbi_failure_reason();
 	}
 	// Free the image memory
 	stbi_image_free(data);
+
+	// Texture Object 2
+	glBindTexture(GL_TEXTURE_2D, texture[1]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
+	// Texture Filtering
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
+	// Load and generate the Texture
+	data = stbi_load("Textures/awesomeface.png", &width, &height, &nrChannels, 0); // get image width, height and color channels
+	if (data) {
+		// png image has transparency and alpha channel => image source data-type is of GL_RGBA
+		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
+			GL_RGB /*format to store the image*/, width, height, 0,
+			GL_RGBA /*format of the source image*/, GL_UNSIGNED_BYTE, data);
+		glGenerateMipmap(GL_TEXTURE_2D);
+	}
+	else {
+		std::cout << "====================TEXTURE==================" << std::endl;
+		std::cout << "Width: " << width << std::endl;
+		std::cout << "Height: " << height << std::endl;
+		std::cout << "nrChannels: " << nrChannels << std::endl;
+		std::cout << "Failed to load texture: " << stbi_failure_reason() << std::endl;
+		std::cout << "====================TEXTURE==================" << std::endl;
+	}
+	// Free the image memory
+	stbi_image_free(data);
+
+	// Set Texture Unit each shader sampler belong to
+	ourShader.use();
+	ourShader.setInt("texture1", 0); // set sampler texture1 to Texture Unit 0
+	ourShader.setInt("texture2", 1); // set sampler texture2 to Texture Unit 1
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -132,9 +162,15 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
 		ourShader.use();
-		// Bind Texture object
-		glBindTexture(GL_TEXTURE_2D, texture);
-		// Draw a Triangle by using VAO
+
+		// Bind Texture Object 1 to Texture Unit 0
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, texture[0]);
+		// Bind Texture Object 2 to Texture Unit 1
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, texture[1]);
+
+		// Render container
 		glBindVertexArray(VAO);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
