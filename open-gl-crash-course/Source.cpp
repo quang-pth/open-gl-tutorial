@@ -45,10 +45,10 @@ int main() {
 	// Vertices Data
 	float vertices[] = {
 		// positions(-1-1)		// colors				// Texture Coordinates (0-1)
-		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,		2.0f, 2.0f,		// top right
-		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,		2.0f, 0.0f,		// bottom right
-		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,		0.0f, 0.0f,		// bottom left
-		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,		0.0f, 2.0f,		// top left
+		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,		.45f, .45f,		// top right
+		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,		.45f, .35f,		// bottom right
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,		.35f, .35f,		// bottom left
+		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,		.35f, .45f,		// top left
 	};
 
 	unsigned int indices[] = { // orders to draw the rectangle indices starts from 0
@@ -94,11 +94,11 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 	// Set the texture wrapping parameters
 	// S, T, R (3D texture) => x, y, z axis
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // set mirror mode on texture x axis
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	// Set Texture Filtering parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // set GL_NEAREST to clearly see the pixels
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// Load and generate the Texture
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
@@ -122,11 +122,11 @@ int main() {
 
 	// Texture Object 2
 	glBindTexture(GL_TEXTURE_2D, texture[1]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT); // set mirror mode on texture x axis
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	// Texture Filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST); // set GL_NEAREST to clearly see the pixels
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	// Load and generate the Texture
 	data = stbi_load("Textures/awesomeface.png", &width, &height, &nrChannels, 0); // get image width, height and color channels
 	if (data) {
