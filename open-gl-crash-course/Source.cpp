@@ -45,10 +45,10 @@ int main() {
 	// Vertices Data
 	float vertices[] = {
 		// positions(-1-1)		// colors				// Texture Coordinates (0-1)
-		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,		1.0f, 1.0f,		// top right
-		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,		1.0f, 0.0f,		// bottom right
+		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,		2.0f, 2.0f,		// top right
+		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,		2.0f, 0.0f,		// bottom right
 		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,		0.0f, 0.0f,		// bottom left
-		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,		0.0f, 1.0f		// top left
+		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,		0.0f, 2.0f,		// top left
 	};
 
 	unsigned int indices[] = { // orders to draw the rectangle indices starts from 0
@@ -94,7 +94,7 @@ int main() {
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
 	// Set the texture wrapping parameters
 	// S, T, R (3D texture) => x, y, z axis
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // set mirror mode on texture x axis
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
 	// Set Texture Filtering parameters
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
@@ -122,7 +122,7 @@ int main() {
 
 	// Texture Object 2
 	glBindTexture(GL_TEXTURE_2D, texture[1]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT); // set mirror mode on texture x axis
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
 	// Texture Filtering
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
