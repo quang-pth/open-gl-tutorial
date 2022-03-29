@@ -5,7 +5,7 @@
 #include"stb_image.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void processInput(GLFWwindow* window, float &ratio);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -45,10 +45,10 @@ int main() {
 	// Vertices Data
 	float vertices[] = {
 		// positions(-1-1)		// colors				// Texture Coordinates (0-1)
-		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,		.45f, .45f,		// top right
-		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,		.45f, .35f,		// bottom right
-		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,		.35f, .35f,		// bottom left
-		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,		.35f, .45f,		// top left
+		0.5f, 0.5f, 0.0f,		1.0f, 0.0f, 0.0f,		1.0f, 1.0f,		// top right
+		0.5f, -0.5f, 0.0f,		0.0f, 1.0f, 0.0f,		1.0f, 0.0f,		// bottom right
+		-0.5f, -0.5f, 0.0f,		0.0f, 0.0f, 1.0f,		0.0f, 0.0f,		// bottom left
+		-0.5f, 0.5f, 0.0f,		1.0f, 1.0f, 0.0f,		0.0f, 1.0f,		// top left
 	};
 
 	unsigned int indices[] = { // orders to draw the rectangle indices starts from 0
@@ -152,16 +152,18 @@ int main() {
 	ourShader.setInt("texture1", 0); // set sampler texture1 to Texture Unit 0
 	ourShader.setInt("texture2", 1); // set sampler texture2 to Texture Unit 1
 
+	float ratio = 0.0f;
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
-		// Close GLFW when pressing Escape key
-		processInput(window);
-
 		// Rendering stuffs here
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
 		ourShader.use();
+		// Close GLFW when pressing Escape key
+		processInput(window, ratio);
+		// Set uniform interpolate ratio between two textures
+		ourShader.setFloat("ratio", ratio);
 
 		// Bind Texture Object 1 to Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);
@@ -184,7 +186,6 @@ int main() {
 	glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
 	glDeleteBuffers(1, &VAO);
-
 	glfwTerminate();
 	return 0;
 }
@@ -193,8 +194,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow* window, float &ratio) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
+	}
+	else if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		float currentRatio = ratio + 0.001f;
+		ratio = currentRatio > 1.0f ? 1.0f : currentRatio;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		float currentRatio = ratio - 0.001f;
+		ratio = currentRatio < 0.0f ? 0.0f : currentRatio;
 	}
 }
