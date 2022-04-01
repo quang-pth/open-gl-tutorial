@@ -3,6 +3,9 @@
 #include <iostream>
 #include"Shader.h"
 #include"stb_image.h"
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
@@ -161,6 +164,11 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
+		// Test Matrix transformation
+		glm::mat4 trans = glm::mat4(1.0f); // identity 4x4 matrix
+		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
 		ourShader.use();
 
 		// Bind Texture Object 1 to Texture Unit 0
@@ -169,6 +177,8 @@ int main() {
 		// Bind Texture Object 2 to Texture Unit 1
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
+
+		ourShader.setMat4("transform", trans);
 
 		// Render container
 		glBindVertexArray(VAO);
