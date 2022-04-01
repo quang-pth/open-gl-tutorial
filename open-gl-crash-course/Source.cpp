@@ -164,10 +164,16 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
-		// Test Matrix transformation
+		// Rotation and Translation matrix
 		glm::mat4 trans = glm::mat4(1.0f); // identity 4x4 matrix
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
 		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
+		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+
+		// Translation and Scale matrix
+		glm::mat4 scaleTrans = glm::mat4(1.0f);
+		float scaleRatio = static_cast<float>(sin(glfwGetTime()));
+		scaleTrans = glm::scale(scaleTrans, glm::vec3(scaleRatio, scaleRatio, scaleRatio));
+		scaleTrans = glm::translate(scaleTrans, glm::vec3(-0.5, 0.5, 0));
 
 		ourShader.use();
 
@@ -177,12 +183,16 @@ int main() {
 		// Bind Texture Object 2 to Texture Unit 1
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
-
-		ourShader.setMat4("transform", trans);
-
-		// Render container
 		glBindVertexArray(VAO);
+
+		// Render First container
+		ourShader.setMat4("transform", trans);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		
+		// Render Second container
+		ourShader.setMat4("transform", scaleTrans);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
