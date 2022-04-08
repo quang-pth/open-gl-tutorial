@@ -164,35 +164,29 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT); // state-using function
 
-		// Rotation and Translation matrix
-		glm::mat4 trans = glm::mat4(1.0f); // identity 4x4 matrix
-		trans = glm::translate(trans, glm::vec3(0.5f, -0.5f, 0.0f));
-		trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-
-		// Translation and Scale matrix
-		glm::mat4 scaleTrans = glm::mat4(1.0f);
-		float scaleRatio = static_cast<float>(sin(glfwGetTime()));
-		scaleTrans = glm::scale(scaleTrans, glm::vec3(scaleRatio, scaleRatio, scaleRatio));
-		scaleTrans = glm::translate(scaleTrans, glm::vec3(-0.5, 0.5, 0));
-
-		ourShader.use();
-
 		// Bind Texture Object 1 to Texture Unit 0
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, texture[0]);
 		// Bind Texture Object 2 to Texture Unit 1
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, texture[1]);
-		glBindVertexArray(VAO);
 
-		// Render First container
-		ourShader.setMat4("transform", trans);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		
-		// Render Second container
-		ourShader.setMat4("transform", scaleTrans);
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		
+		ourShader.use();
+		// Model matrix
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::rotate(model, glm::radians(-55.0f), glm::vec3(1.0f, 0.0f, 0.0f) /*rotate on x-axis*/);
+		// View matrix
+		glm::mat4 view = glm::mat4(1.0f);
+		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f) /*translate the object further from the scene*/);
+		// Projection matrix as perspective projection
+		glm::mat4 projection = glm::mat4(1.0f);
+		projection = glm::perspective(glm::radians(45.0f), 800.0f / 600.0f, 0.1f, 100.0f);
+		ourShader.setMat4("model", model);
+		ourShader.setMat4("view", view);
+		ourShader.setMat4("projection", projection);
+
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);		
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
