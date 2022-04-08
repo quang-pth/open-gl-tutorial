@@ -217,18 +217,24 @@ int main() {
 		view = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f) /*translate the object further from the scene*/);
 		// Projection matrix as perspective projection
 		glm::mat4 projection = glm::mat4(1.0f);
-		projection = glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+		float aspectRatio = (float)SCR_WIDTH / (float)SCR_HEIGHT;
+		//projection = glm::perspective(glm::radians(60.0f) /*Camera FOV*/, aspectRatio, 0.1f /*distance to the near plane*/, (float) glfwGetTime() * 0.5f /*how far the camera can view*/);
+		projection = glm::perspective(glm::radians(60.0f) /*Camera FOV*/, aspectRatio, 0.1f /*distance to the near plane*/, 100.0f /*distance to the further plane*/);
 		// Pass transformation matrices to the shader
 		ourShader.setMat4("view", view);
 		ourShader.setMat4("projection", projection);
 
-		// Draw 10 cube with different positions
 		glBindVertexArray(VAO);
+		// Draw 10 cube with different positions
 		for (unsigned int i = 0; i < 10; i++) {
 			// Model matrix
 			glm::mat4 model = glm::mat4(1.0f);
 			model = glm::translate(model, cubePositions[i]);
 			float angle = 20.0f * i;
+			// Rotate the all the cubics locate at every third position
+			if (i % 3 == 0) {
+				angle = glfwGetTime() * 25.0f;
+			}
 			model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f) /*rotate on x-axis*/);
 			ourShader.setMat4("model", model);
 			
