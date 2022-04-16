@@ -2,6 +2,7 @@
 #include<GLFW/glfw3.h>
 #include <iostream>
 #include"Shader.h"
+#include"camera.h"
 #include"stb_image.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -21,12 +22,9 @@ float lastY = SCR_HEIGHT / 2;
 
 // Camera setup
 glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-float yaw = -90.0f; // left-right looking
-float pitch = 0; // up-down looking
+Camera camera(cameraPosition);
+
 bool firstMouse = true;
-float fov = 45.0f; // camera Field of view
 
 float deltaTime = 0.0f; // time between current frame and last frame
 float lastFrame = 0.0f; // time of the last frame
@@ -53,12 +51,13 @@ int main() {
 	glfwMakeContextCurrent(window);
 	// Adjust the Viewport as the window is resized by registering the window to the callback
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	// Hide the cursor and capture it
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	// Get the mouse position offset by registering a mouse callback
 	glfwSetCursorPosCallback(window, mouse_callback);
 	// Register the mouse scroll callback
 	glfwSetScrollCallback(window, scroll_callback);
+
+	// Hide the cursor and capture it
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	// Init OpenGL function pointers
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
@@ -239,12 +238,6 @@ int main() {
 
 		ourShader.use();
 
-		// Create LookAt Matrix as View matrix to transform objects from World Space to Camera Space
-		glm::mat4 view = glm::lookAt(cameraPosition /*camera position*/, 
-			cameraPosition + cameraFront /*camera's direction*/ , 
-			cameraUp /*up direction points upwards*/);
-		ourShader.setMat4("view", view);
-
 		glBindVertexArray(VAO);
 		// Draw 10 cube with different positions
 		for (unsigned int i = 0; i < 10; i++) {
@@ -257,9 +250,12 @@ int main() {
 			
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
+		// Create LookAt Matrix as View matrix to transform objects from World Space to Camera Space
+		glm::mat4 view = camera.GetViewMatrix();
+		ourShader.setMat4("view", view);
 		// Projection matrix as perspective projection
 		float aspectRatio = (float)SCR_WIDTH / (float)SCR_HEIGHT;
-		glm::mat4 projection = glm::perspective(glm::radians(fov) /*Camera FOV*/, aspectRatio, 0.1f /*distance to the near plane*/, 100.0f /*distance to the further plane*/);
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom) /*Camera FOV*/, aspectRatio, 0.1f /*distance to the near plane*/, 100.0f /*distance to the further plane*/);
 		// Pass transformation matrices to the shader
 		ourShader.setMat4("projection", projection);
 
@@ -284,7 +280,10 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 	glViewport(0, 0, width, height);
 }
 
-void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+	float xpos = static_cast<float>(xposIn);
+	float ypos = static_cast<float>(yposIn);
+
 	if (firstMouse) {
 		lastX = xpos;
 		lastY = ypos;
@@ -296,40 +295,11 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos) {
 	lastX = xpos;
 	lastY = ypos;
 
-	float sensitivity = 0.05f;
-	xoffset *= sensitivity;
-	yoffset *= sensitivity;
-
-	yaw += xoffset;
-	pitch += yoffset;
-
-	// Constrain the vertical direction as we don't want user to look up to the sky or his feet but not further
-	if (pitch > 89.0f) {
-		pitch = 89.0f;
-	}
-	if (pitch < -89.0f) {
-		pitch = -89.0f;
-	}
-
-	// Camera direction
-	glm::vec3 direction;
-	direction.x = cos(glm::radians(yaw)) * cos(glm::radians(pitch));
-	direction.y = sin(glm::radians(pitch));
-	direction.z = sin(glm::radians(yaw)) * cos(glm::radians(pitch));
-	cameraFront = glm::normalize(direction);
+	camera.ProcessMouseMovement(xoffset, yoffset);
 }
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	fov -= (float)yoffset * 1.5f; // the amount of we scrolled vertically
-
-	// Constrain the fov between 1.0f and 45.0f
-	if (fov < 1.0f) {
-		fov = 1.0f;
-	}
-	
-	if (fov > 45.0f) {
-		fov = 45.0f;
-	}
+	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 void processInput(GLFWwindow* window) {
@@ -341,22 +311,17 @@ void processInput(GLFWwindow* window) {
 		START Control Camera
 	=============================================
 	*/
-	const float cameraSpeed = 25.0f * deltaTime; // move camera exactly 25.0f units per second
-	// Move camera forwards
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		cameraPosition += cameraFront * cameraSpeed;
+		camera.ProcessKeyboard(FORWARD, deltaTime);
 	}
-	// Move camera backwards
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		cameraPosition -= cameraFront * cameraSpeed;
+		camera.ProcessKeyboard(BACKWARD, deltaTime);
 	}
-	// Move camera to the left
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		cameraPosition -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(LEFT, deltaTime);
 	}
-	// Move camera to the right
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		cameraPosition += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+		camera.ProcessKeyboard(RIGHT, deltaTime);
 	}
 	/*
 	=============================================
