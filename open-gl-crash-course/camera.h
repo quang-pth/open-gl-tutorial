@@ -91,6 +91,7 @@ public:
         rotation[1][2] = cameraDirection.y;
         rotation[2][2] = cameraDirection.z;
         
+        // translate first, then rotate becase we want to rotate about the origin
         glm::mat4 lookAtMatrix = rotation * translation;
 
         return lookAtMatrix;

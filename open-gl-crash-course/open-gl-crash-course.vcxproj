@@ -150,6 +150,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="FragmentShader.glsl" />
+    <None Include="LightSourceFragmentShader.glsl" />
+    <None Include="LightSourceVertexShader.glsl" />
     <None Include="VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
