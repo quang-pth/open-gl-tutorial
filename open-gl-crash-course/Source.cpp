@@ -171,7 +171,7 @@ int main() {
 		lightingShader.use();
 		lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
 		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		lightingShader.setVec3("lightPos", newLightPos);
+		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("viewPos", camera.Position);
 		
 		glm::mat4 model = glm::mat4(1.0f);
@@ -190,7 +190,7 @@ int main() {
 
 		// Light Source
 		model = glm::mat4(1.0f);
-		model = glm::translate(model, newLightPos);
+		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		lightCubdeShader.use();
 		lightCubdeShader.setMat4("model", model);
