@@ -63,8 +63,8 @@ public:
     // returns the view matrix calculated using Euler Angles and the LookAt Matrix
     glm::mat4 GetViewMatrix()
     {
-        //return glm::lookAt(Position, Position + Front, Up);
-        return LookAt(Position, Position + Front, Up);
+        return glm::lookAt(Position, Position + Front, Up);
+        // return LookAt(Position, Position + Front, Up);
     }
 
     glm::mat4 LookAt(glm::vec3 position, glm::vec3 target, glm::vec3 worldUp) {
@@ -112,7 +112,7 @@ public:
             Position += Right * velocity;
         
         // FPS camera, keeps player at the ground level
-        Position.y = 0;
+        // Position.y = 0;
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
