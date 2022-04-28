@@ -153,7 +153,7 @@ int main() {
 	glEnableVertexAttribArray(0);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-
+		
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -166,7 +166,6 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
 
-		glm::vec3 newLightPos = glm::vec3(lightPos.x * (float)sin(glfwGetTime()), lightPos.y * (float)cos(glfwGetTime()), lightPos.z * (float)cos(glfwGetTime()));
 		// Draw CUBE
 		lightingShader.use();
 		lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
