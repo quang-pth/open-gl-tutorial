@@ -209,6 +209,9 @@ int main() {
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		lightCubdeShader.use();
+		// Set light source color
+		lightCubdeShader.setVec3("LightColor", lightColor);
+
 		lightCubdeShader.setMat4("model", model);
 		lightCubdeShader.setMat4("view", view);
 		lightCubdeShader.setMat4("projection", projection);
