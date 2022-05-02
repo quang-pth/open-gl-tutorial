@@ -166,28 +166,26 @@ int main() {
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
 
+		// Move the camara
+		lightPos.x = sin(glfwGetTime());
+		lightPos.y = sin(glfwGetTime());
+		lightPos.z = cos(glfwGetTime());
+		
 		// Draw CUBE
 		lightingShader.use();
 		lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3("lightPos", lightPos);
+		lightingShader.setVec3("light.position", lightPos);
 		lightingShader.setVec3("viewPos", camera.Position);
 		
-		// Set material components color for object
-		lightingShader.setVec3("material.ambient", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3("material.diffuse", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		lightingShader.setFloat("material.shininess", 32.0f);
-		// Set light source properties
-		glm::vec3 lightColor;
-		lightColor.x = sin(glfwGetTime() * 2.0f);
-		lightColor.y = sin(glfwGetTime() * 0.7f);
-		lightColor.z = sin(glfwGetTime() * 1.3f);
+		// Simulate the cyan plastic container
+		lightingShader.setVec3("material.ambient", 0.05375f, 0.05f, 0.0625f);
+		lightingShader.setVec3("material.diffuse", 0.18275f, 0.17f, 0.22525f);
+		lightingShader.setVec3("material.specular", 0.332741f, 0.328634f, 0.346435f);
+		lightingShader.setFloat("material.shininess", 128.0f * 0.3);
 
-		glm::vec3 diffuseColor = lightColor * glm::vec3(0.5f);
-		glm::vec3 ambientColor = diffuseColor * glm::vec3(0.2f);
-
-		lightingShader.setVec3("light.ambient", ambientColor); 
-		lightingShader.setVec3("light.diffuse", diffuseColor);
+		// Set light source intensities 
+		lightingShader.setVec3("light.ambient", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("light.diffuse", 1.0f, 1.0f, 1.0f);
 		lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 		glm::mat4 model = glm::mat4(1.0f);
@@ -210,8 +208,6 @@ int main() {
 		model = glm::scale(model, glm::vec3(0.2f));
 		lightCubdeShader.use();
 		// Set light source color
-		lightCubdeShader.setVec3("LightColor", lightColor);
-
 		lightCubdeShader.setMat4("model", model);
 		lightCubdeShader.setMat4("view", view);
 		lightCubdeShader.setMat4("projection", projection);
