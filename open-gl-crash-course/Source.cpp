@@ -160,11 +160,13 @@ int main() {
 
 	// Load texture
 	unsigned int diffuseMap = loadTexture("Textures/container2.png");
-	unsigned int specularMap = loadTexture("Textures/lighting_maps_specular_color.png");
+	unsigned int specularMap = loadTexture("Textures/container2_specular.png");
+	unsigned int emissionMap = loadTexture("Textures/matrix.jpg");
 
 	lightingShader.use();
 	lightingShader.setInt("material.diffuse", 0);
 	lightingShader.setInt("material.specular", 1);
+	lightingShader.setInt("material.emission", 2);
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -207,17 +209,20 @@ int main() {
 		// Bind to diffuse map
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
-		// Bing to specular map
+		// Bind to specular map
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, specularMap);
+		// Bind to emission map
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, emissionMap);
 
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
 		// Light Source
-		lightPos.x = sin(glfwGetTime());
+		/*lightPos.x = sin(glfwGetTime());
 		lightPos.y = sin(glfwGetTime());
-		lightPos.z = cos(glfwGetTime());
+		lightPos.z = cos(glfwGetTime());*/
 		
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
