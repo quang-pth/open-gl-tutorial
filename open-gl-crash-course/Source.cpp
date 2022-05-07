@@ -184,14 +184,9 @@ int main() {
 		lightingShader.setVec3("viewPos", camera.Position);
 		
 		// Light properties
-		glm::vec3 lightColor = glm::vec3(1.0f);
-		lightColor.x = sin(glfwGetTime());
-		lightColor.y = sin(glfwGetTime());
-		lightColor.z = sin(glfwGetTime());
-
-		lightingShader.setVec3("light.ambient", lightColor);
-		lightingShader.setVec3("light.diffuse", lightColor);
-		lightingShader.setVec3("light.specular", lightColor);
+		lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
+		lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+		lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 
 		// Set material components color for object
 		lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
