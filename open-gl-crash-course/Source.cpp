@@ -160,7 +160,7 @@ int main() {
 
 	// Load texture
 	unsigned int diffuseMap = loadTexture("Textures/container2.png");
-	unsigned int specularMap = loadTexture("Textures/container2_specular.png");
+	unsigned int specularMap = loadTexture("Textures/lighting_maps_specular_color.png");
 
 	lightingShader.use();
 	lightingShader.setInt("material.diffuse", 0);
@@ -215,6 +215,10 @@ int main() {
 		glBindVertexArray(0);
 
 		// Light Source
+		lightPos.x = sin(glfwGetTime());
+		lightPos.y = sin(glfwGetTime());
+		lightPos.z = cos(glfwGetTime());
+		
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));

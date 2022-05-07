@@ -41,7 +41,7 @@ void main()
     vec3 viewDir = normalize(viewPos - Position);
     vec3 reflectDir = reflect(-lightDir, norm); // negate lightDir because we want the light direction from the light source to the fragment vertices  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
-    vec3 specular = light.specular * spec * (vec3(1.0) - vec3(texture(material.specular, TexCoords)));      
+    vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));      
 
     FragColor = vec4(ambient + diffuse + specular, 1.0);
 }
