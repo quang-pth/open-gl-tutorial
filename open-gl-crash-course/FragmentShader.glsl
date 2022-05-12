@@ -18,7 +18,7 @@ struct Material {
 uniform Material material;
 
 struct Light {
-    vec3 position;
+    vec3 direction; // directional light: lighting calculation will be the same for each fragment position
 
     vec3 ambient;
     vec3 diffuse;
@@ -33,11 +33,10 @@ void main()
     
     // diffuse 
     vec3 norm = normalize(Normal);
-    vec3 lightDir = normalize(lightPos - Position);
+    vec3 lightDir = normalize(-light.direction); // light direction to be a direction from fragment towards the light source
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
         
-    
     // specular
     vec3 viewDir = normalize(viewPos - Position);
     vec3 reflectDir = reflect(-lightDir, norm); // negate lightDir because we want the light direction from the light source to the fragment vertices  
