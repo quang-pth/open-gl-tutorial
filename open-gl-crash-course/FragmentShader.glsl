@@ -17,7 +17,11 @@ struct Material {
 uniform Material material;
 
 struct Light {
+    // Flashlight properties
     vec3 position;
+    vec3 direction;
+    float cutoff;
+    float outerCutoff;
 
     vec3 ambient;
     vec3 diffuse;
@@ -31,7 +35,7 @@ struct Light {
 uniform Light light;
 
 void main()
-{ 	
+{   
     // Calc the object ambient color based on the diffuse map
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
     
@@ -47,11 +51,17 @@ void main()
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));      
 
-    // Calc light point properties 
+    // spotlight (soft edges)
+//    float theta = dot(lightDir, normalize(-light.direction));
+//    float epsilon = light.cutoff - light.outerCutoff;
+//    float intensity = clamp((theta - light.outerCutoff) / epsilon, 0, 1); // clamp the intensity between 0 and 1
+//    diffuse *= intensity;
+//    specular *= intensity;
+
+    // light point attenuation
     float distance = length(light.position - FragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * distance);
-    
-    ambient *= attenuation;
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+    ambient *= attenuation; 
     diffuse *= attenuation;
     specular *= attenuation;
 

@@ -199,9 +199,13 @@ int main() {
 		lightingShader.setVec3("viewPos", camera.Position);
 		
 		// Light properties 
-		lightingShader.setVec3("light.position", lightPos);
-		lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
-		lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
+		lightingShader.setVec3("light.position", camera.Position);
+		lightingShader.setVec3("light.direction", camera.Front);
+		lightingShader.setFloat("light.cutoff", glm::cos(glm::radians(12.5f)));
+		lightingShader.setFloat("light.outerCutoff", glm::cos(glm::radians(17.5f)));
+		
+		lightingShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
+		lightingShader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
 		lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
 		// Set attenuation property
 		lightingShader.setFloat("light.constant", 1.0f);
@@ -209,8 +213,7 @@ int main() {
 		lightingShader.setFloat("light.quadratic", 0.32f);
 
 		// Set material components color for object
-		lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
-		lightingShader.setFloat("material.shininess", 64.0f);
+		lightingShader.setFloat("material.shininess", 32.0f);
 
 		glm::mat4 view = camera.GetViewMatrix();
 		lightingShader.setMat4("view", view);
@@ -239,7 +242,7 @@ int main() {
 		glBindVertexArray(0);
 
 		// Light Source
-		glm::mat4 model = glm::mat4(1.0f);
+		/*glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		lightCubeShader.use();
@@ -248,7 +251,7 @@ int main() {
 		lightCubeShader.setMat4("projection", projection);
 		glBindVertexArray(lightCubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
+		glBindVertexArray(0);*/
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
