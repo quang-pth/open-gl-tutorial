@@ -180,7 +180,7 @@ int main() {
 	lightingShader.setInt("material.diffuse", 0);
 	lightingShader.setInt("material.specular", 1);
 
-	// 16 Light Casters
+	// 16 Point Lights
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -196,14 +196,17 @@ int main() {
 
 		// Draw CUBE
 		lightingShader.use();
-		lightingShader.setVec3("lightPos", lightPos);
 		lightingShader.setVec3("viewPos", camera.Position);
 		
-		// Light properties
-		lightingShader.setVec3("light.direction", -0.2f, -1.0f, -0.3f);
+		// Light properties 
+		lightingShader.setVec3("light.position", lightPos);
 		lightingShader.setVec3("light.ambient", 0.2f, 0.2f, 0.2f);
 		lightingShader.setVec3("light.diffuse", 0.5f, 0.5f, 0.5f);
 		lightingShader.setVec3("light.specular", 1.0f, 1.0f, 1.0f);
+		// Set attenuation property
+		lightingShader.setFloat("light.constant", 1.0f);
+		lightingShader.setFloat("light.linear", 0.09f);
+		lightingShader.setFloat("light.quadratic", 0.32f);
 
 		// Set material components color for object
 		lightingShader.setVec3("material.specular", 0.5f, 0.5f, 0.5f);
@@ -236,7 +239,7 @@ int main() {
 		glBindVertexArray(0);
 
 		// Light Source
-		/*glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
 		model = glm::scale(model, glm::vec3(0.2f));
 		lightCubeShader.use();
@@ -245,7 +248,7 @@ int main() {
 		lightCubeShader.setMat4("projection", projection);
 		glBindVertexArray(lightCubeVAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);*/
+		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
@@ -329,7 +332,7 @@ unsigned int loadTexture(const char* path) {
 	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0); // get image width, height and color channels
 	
 	if (data) {
-		GLenum format;
+		GLenum format = GL_RGB;
 		if (nrChannels == 1)
 			format = GL_RED;
 		else if (nrChannels == 3)
