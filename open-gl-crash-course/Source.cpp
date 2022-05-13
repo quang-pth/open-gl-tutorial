@@ -202,7 +202,7 @@ int main() {
 		lightingShader.setVec3("light.position", camera.Position);
 		lightingShader.setVec3("light.direction", camera.Front);
 		lightingShader.setFloat("light.cutoff", glm::cos(glm::radians(12.5f)));
-		lightingShader.setFloat("light.outerCutoff", glm::cos(glm::radians(17.5f)));
+		lightingShader.setFloat("light.outerCutoff", glm::cos(glm::radians(20.0f)));
 		
 		lightingShader.setVec3("light.ambient", 0.1f, 0.1f, 0.1f);
 		lightingShader.setVec3("light.diffuse", 0.8f, 0.8f, 0.8f);
@@ -210,7 +210,7 @@ int main() {
 		// Set attenuation property
 		lightingShader.setFloat("light.constant", 1.0f);
 		lightingShader.setFloat("light.linear", 0.09f);
-		lightingShader.setFloat("light.quadratic", 0.32f);
+		lightingShader.setFloat("light.quadratic", 0.032);
 
 		// Set material components color for object
 		lightingShader.setFloat("material.shininess", 32.0f);
