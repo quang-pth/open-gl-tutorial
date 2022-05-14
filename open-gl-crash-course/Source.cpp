@@ -139,10 +139,10 @@ int main() {
 	};
 
 	glm::vec3 pointLightColors[] = {
-		glm::vec3(1.0f, 0.6f, 0.0f),
-		glm::vec3(1.0f, 0.0f, 0.0f),
-		glm::vec3(1.0f, 1.0f, 0.0f),
-		glm::vec3(0.2f, 0.2f, 1.0f)
+		glm::vec3(0.2f, 0.2f, 0.6f),
+		glm::vec3(0.3f, 0.3f, 0.7f),
+		glm::vec3(0.0f, 0.0f, 0.3f),
+		glm::vec3(0.4f, 0.4f, 0.4f)
 	};
 
 	glm::vec3 pointLightPositions[] = {
@@ -203,7 +203,7 @@ int main() {
 		processInput(window);
 
 		// Clear color of the previous frame on the buffer
-		glClearColor(0.75f, 0.52f, 0.3f, 1.0f); // state-setting function
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
 
 		// Draw CUBE
@@ -212,9 +212,9 @@ int main() {
 		
 		// Directional light
 		glm::vec3 lightProperties[] = {
-			glm::vec3(0.3f, 0.24f, 0.14f), // ambient
-			glm::vec3(0.7f, 0.42f, 0.26f), // diffuse
-			glm::vec3(0.5f, 0.5f, 0.5f), // specular
+			glm::vec3(0.05f, 0.05f, 0.1f), // ambient
+			glm::vec3(0.2f, 0.2f, 0.7f), // diffuse
+			glm::vec3(0.7f, 0.7f, 0.7f), // specular
 		};
 		lightingShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
 		lightingShader.setVec3("dirLight.ambient", lightProperties[0]);
@@ -256,8 +256,8 @@ int main() {
 		// Spot light
 		lightingShader.setVec3("spotLight.position", camera.Position);
 		lightingShader.setVec3("spotLight.direction", camera.Front);
-		lightingShader.setFloat("spotLight.cutoff", glm::cos(glm::radians(12.5f)));
-		lightingShader.setFloat("spotLight.outerCutoff", glm::cos(glm::radians(15.0f)));
+		lightingShader.setFloat("spotLight.cutoff", glm::cos(glm::radians(10.0f)));
+		lightingShader.setFloat("spotLight.outerCutoff", glm::cos(glm::radians(12.5f)));
 		lightingShader.setVec3("spotLight.ambient", 0.0f, 0.0f, 0.0f);
 		lightingShader.setVec3("spotLight.diffuse", 1.0f, 1.0f, 1.0f);
 		lightingShader.setVec3("spotLight.specular", 1.0f, 1.0f, 1.0f);
