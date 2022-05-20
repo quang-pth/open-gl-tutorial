@@ -103,14 +103,16 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir) {
     vec3 reflectDir = reflect(-lightDir, normal); // negate lightDir because we want the light direction from the light source to the fragment vertices  
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     
-    // attenuation
-    float distance = length(light.position - fragPos);
-    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
-    
+    // calc light source properties
     vec3 ambient = light.ambient * vec3(texture(material.diffuse, TexCoords));
     vec3 diffuse = light.diffuse * diff * vec3(texture(material.diffuse, TexCoords));
     vec3 specular = light.specular * spec * vec3(texture(material.specular, TexCoords));  
     
+    // attenuation
+    float distance = length(light.position - fragPos);
+    float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));
+    
+    // light source intensity varies based on the distance
     ambient *= attenuation; 
     diffuse *= attenuation;
     specular *= attenuation;

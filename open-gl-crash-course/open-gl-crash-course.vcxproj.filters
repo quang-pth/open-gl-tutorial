@@ -13,36 +13,60 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Source Files\Light Sources">
+      <UniqueIdentifier>{f699f78e-3b77-4061-b65e-63837c51ca0b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Model">
+      <UniqueIdentifier>{6029ead2-f013-4059-a5f0-54753bac909c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Cubes">
+      <UniqueIdentifier>{26cb8da2-65cb-4f50-9146-d083adaf9c94}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Misc">
+      <UniqueIdentifier>{139de2b9-ab95-41a2-94a9-53e1df199254}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="glad.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Source Files\Model</Filter>
     </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stb_image.cpp">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="model.cpp">
+      <Filter>Source Files\Model</Filter>
     </ClCompile>
     <ClCompile Include="camera.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="glad.c">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="stb_image.cpp">
+      <Filter>Source Files\Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Source Files\Misc</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="VertexShader.glsl">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="FragmentShader.glsl">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="LightSourceFragmentShader.glsl">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Light Sources</Filter>
     </None>
     <None Include="LightSourceVertexShader.glsl">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Light Sources</Filter>
+    </None>
+    <None Include="model_loading_vertex.glsl">
+      <Filter>Source Files\Model</Filter>
+    </None>
+    <None Include="model_loading_fragment.glsl">
+      <Filter>Source Files\Model</Filter>
+    </None>
+    <None Include="FragmentShader.glsl">
+      <Filter>Source Files\Cubes</Filter>
+    </None>
+    <None Include="VertexShader.glsl">
+      <Filter>Source Files\Cubes</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +77,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
