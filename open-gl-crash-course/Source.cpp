@@ -76,7 +76,7 @@ int main() {
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
-	
+
 	// Light source shader
 	Shader pointLightShader("LightSourceVertexShader.glsl", "LightSourceFragmentShader.glsl");
 	// Model shader
@@ -157,10 +157,10 @@ int main() {
 	// unbind vbo and vao
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	
+
 
 	// Render loop
-	while(!glfwWindowShouldClose(window)) {
+	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 
@@ -170,14 +170,14 @@ int main() {
 		// Clear color of the previous frame on the buffer
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
-		
+
 		// view/projection transformations
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
 		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-		
+
 		modelShader.use();
 		modelShader.setMat4("projection", projection);
 		modelShader.setMat4("view", view);
@@ -200,7 +200,7 @@ int main() {
 			glm::vec3 newPos = glm::vec3(pointLightPositions[i].x * sinFactor, pointLightPositions[i].y * sinFactor * cosFactor, pointLightPositions[i].z * cosFactor);
 			setPointLight(modelShader, i, newPos, pointLightColors[i]);
 		}
-		
+
 		// render the loaded model
 		ourModel.Draw(modelShader);
 
@@ -264,7 +264,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
-	/* 
+	/*
 	=============================================
 		START Control Camera
 	=============================================
@@ -308,11 +308,11 @@ unsigned int loadTexture(const char* path) {
 	glGenTextures(1, &textureID);
 	// Load and generate the Texture
 	int width, height, nrChannels;
-	
+
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-	
+
 	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0); // get image width, height and color channels
-	
+
 	if (data) {
 		GLenum format = GL_RGB;
 		if (nrChannels == 1)
@@ -327,7 +327,7 @@ unsigned int loadTexture(const char* path) {
 			format /*format to store the image*/, width, height, 0,
 			format /*format of the source image*/, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		
+
 		// Set the texture wrapping parameters
 		// S, T, R (3D texture) => x, y, z axis
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
