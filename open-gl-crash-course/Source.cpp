@@ -158,7 +158,6 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -200,10 +199,7 @@ int main() {
 			glm::vec3 newPos = glm::vec3(pointLightPositions[i].x * sinFactor, pointLightPositions[i].y * sinFactor * cosFactor, pointLightPositions[i].z * cosFactor);
 			setPointLight(modelShader, i, newPos, pointLightColors[i]);
 		}
-
-		// render the loaded model
 		ourModel.Draw(modelShader);
-
 		// Light Source Cube
 		pointLightShader.use();
 		pointLightShader.setMat4("view", view);
@@ -221,7 +217,6 @@ int main() {
 			// Draw light cube
 			glDrawArrays(GL_TRIANGLES, 0, 36);
 		}
-		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
