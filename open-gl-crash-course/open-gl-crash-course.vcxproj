@@ -157,6 +157,7 @@
     <None Include="model_loading_fragment.glsl" />
     <None Include="model_loading_vertex.glsl" />
     <None Include="VertexShader.glsl" />
+    <None Include="YellowFragmentShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />

@@ -73,91 +73,78 @@ int main() {
 		return -1;
 	}
 
-	// configure global opengl state
-	// -----------------------------
-	glEnable(GL_DEPTH_TEST);
-	
-	// Light source shader
-	Shader pointLightShader("LightSourceVertexShader.glsl", "LightSourceFragmentShader.glsl");
-	// Model shader
-	Shader modelShader("model_loading_vertex.glsl", "model_loading_fragment.glsl");
-	Model ourModel("resources/objects/backpack/backpack.obj");
+	// Vertex Shader object
+	unsigned int vertexShader;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	// Attach vertex shader source to shader object
+	glShaderSource(vertexShader, 1, &vertexShaderSource, NULL);
+	glCompileShader(vertexShader);
+	// Check if vertex shader is rendered successfully
+	checkComplieShader(vertexShader, "VERTEX");
 
+	// Fragment Shader Object
+	unsigned int fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
+	glCompileShader(fragmentShader);
+	// Check if vertex shader is rendered successfully
+	checkComplieShader(fragmentShader, "FRAGMENT");
+
+	// Shader Program Object
+	unsigned int shaderProgram;
+	shaderProgram = glCreateProgram();
+	// Attach vertex and fragment shader to Shader program and link them
+	glAttachShader(shaderProgram, vertexShader);
+	glAttachShader(shaderProgram, fragmentShader);
+	glLinkProgram(shaderProgram);
+	checkComplieShader(shaderProgram, "PROGRAM");
+	// Delete vertex and fragment shader after linked it to Shader program
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
+
+	// Vertices Data
 	float vertices[] = {
-		// positions          // normals           // texture coords
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+		0.5f, 0.5f, 0.0f, // top right
+		0.5f, -0.5f, 0.0f, // bottom right
+		-0.5f, -0.5f, 0.0f, // bottom left
+		-0.5f, 0.5f, 0.0f, // top left
 	};
 
-	// point light's positions
-	glm::vec3 pointLightPositions[] = {
-		glm::vec3(3.0f, 0.5f, 3.0f),
-		glm::vec3(3.0f, 0.5f, -3.0f),
-		glm::vec3(-3.0f, 0.5f, -3.0f),
-		glm::vec3(-3.0f, 0.5f, 3.0f)
-	};
-	// point light's colors
-	glm::vec3 pointLightColors[] = {
-		glm::vec3(.3f, .0f, 1.0f),
-		glm::vec3(.9f, .1f, .12f),
-		glm::vec3(.01f, .022f, .54f),
-		glm::vec3(.2f, 1.0f, .0f),
+	unsigned int indices[] = { // the order to draw indices starts from 0
+		0, 1, 3, // first triangle
+		1, 2, 3, // second triangle
 	};
 
-	// Light Source
-	unsigned int lightVAO, lightVBO;
-	glGenVertexArrays(1, &lightVAO);
-	glGenBuffers(1, &lightVBO);
-	glBindVertexArray(lightVAO);
-	// config VBO
-	glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// light source vertex position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// unbind vbo and vao
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	// START BINDING CALLS
+	unsigned int VAO, VBO, EBO;
+	// Create VAO to manage EBO, VBO and attributes pointers
+	glGenVertexArrays(1, &VAO);
+	// Create Vertex Buffer Object (VBO) to manage Vertices Data
+	glGenBuffers(1, &VBO); // generate VBO's id
+	glGenBuffers(1, &EBO); // generate EBO's id
+	glBindVertexArray(VAO); // bind the Vertex Array Object
 	
+	// Bound VBO to the GL_ARRAY_BUFFER and bind the corresponding VBO and attributes pointers to VAO
+	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	// Store Vertex Data within memory of the GPU as managed by VBO 
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	
+	// Bound EBO to the GL_ELEMENT_ARRAY_BUFFER and bind it to the VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO); 
+	// Store indices within memory of the GPU as managed by EBO
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	
+	// Configure the vertex attributes pointers on VBO
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0); // enable the vertex position attribute
+	
+	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO after it's registered to VAO
+	glBindVertexArray(0); // unbind the VAO for later uses
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0); // unbind the EBO after stored
+	// END BINDING CALLS
+	
+	// Set drawing mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -204,23 +191,10 @@ int main() {
 		// render the loaded model
 		ourModel.Draw(modelShader);
 
-		// Light Source Cube
-		pointLightShader.use();
-		pointLightShader.setMat4("view", view);
-		pointLightShader.setMat4("projection", projection);
-		// Render 4 light points
-		glBindVertexArray(lightVAO);
-		for (unsigned int i = 0; i < 4; i++) {
-			glm::mat4 lightModel = glm::mat4(1.0f);
-			glm::vec3 newPos = glm::vec3(pointLightPositions[i].x * sinFactor, pointLightPositions[i].y * sinFactor * cosFactor, pointLightPositions[i].z * cosFactor);
-			lightModel = glm::translate(lightModel, newPos);
-			lightModel = glm::scale(lightModel, glm::vec3(1.0f, 1.0f, 1.0f));
-			pointLightShader.setMat4("model", lightModel);
-			// set light cube color
-			pointLightShader.setVec3("color", pointLightColors[i]);
-			// Draw light cube
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
+		glUseProgram(shaderProgram);
+		// Draw a Triangle by using VAO
+		glBindVertexArray(VAO);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
@@ -229,6 +203,15 @@ int main() {
 
 		lastFrame = currentFrame;
 	}
+
+	// Reset drawing mode
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+	// de-allocate resources once the program is about to exit
+	glDeleteBuffers(1, &VBO);
+	glDeleteBuffers(1, &VAO);
+	glDeleteBuffers(1, &EBO);
+	glDeleteProgram(shaderProgram);
 
 	glfwTerminate();
 	return 0;

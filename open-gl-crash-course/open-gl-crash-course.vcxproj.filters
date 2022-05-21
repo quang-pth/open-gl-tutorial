@@ -68,6 +68,9 @@
     <None Include="VertexShader.glsl">
       <Filter>Source Files\Cubes</Filter>
     </None>
+    <None Include="YellowFragmentShader.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
