@@ -17,6 +17,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 unsigned int loadTexture(const char* path);
 void setPointLight(Shader &shader, int index, glm::vec3 position, glm::vec3 color);
+void DrawPlane(Shader &shader, unsigned int VAO, unsigned int texture, float scaleFactor = 1.0f);
+void DrawTwoContainers(Shader &shader, unsigned int VAO, unsigned int texture, float scaleFactor = 1.0f);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -73,13 +75,18 @@ int main() {
 		return -1;
 	}
 
-	// configure global opengl state
-	// -----------------------------
+	// Depth testing
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-	
+	// Stencil testing
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_KEEP /*keep the stencil's content if stencil testing fail*/,
+		GL_KEEP /*keep the stencil's content if depth testing fail*/,
+		GL_REPLACE /*replace the stencil's content with the ref value if both test are succeed*/);
+
 	// Light source shader
 	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
+	Shader outlineShader("outline-vertex.glsl", "outline-fragment.glsl");
 
 	float cubeVertices[] = {
 		// positions          // texture Coords
@@ -127,13 +134,13 @@ int main() {
 	};
 	float planeVertices[] = {
 		// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
-		 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.501f,  5.0f,  0.0f, 0.0f,
+		 5.0f, -0.503f,  5.0f,  2.0f, 0.0f,
+		-5.0f, -0.503f,  5.0f,  0.0f, 0.0f,
+		-5.0f, -0.503f, -5.0f,  0.0f, 2.0f,
 
-		 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
-		 5.0f, -0.501f, -5.0f,  2.0f, 2.0f
+		 5.0f, -0.503f,  5.0f,  2.0f, 0.0f,
+		-5.0f, -0.503f, -5.0f,  0.0f, 2.0f,
+		 5.0f, -0.503f, -5.0f,  2.0f, 2.0f
 	};
 
 	// Cube 
@@ -165,15 +172,17 @@ int main() {
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	// Texture coords attribute
+	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glEnableVertexAttribArray(1);
 	glBindVertexArray(0);
 
 	// Load cube texture 
 	unsigned int cubeTexture = loadTexture("resources/textures/depth-testing/marble.jpg");
-	unsigned int floorTexture = loadTexture("resources/textures/depth-testing/metal.png");
+	unsigned int planeTexture = loadTexture("resources/textures/depth-testing/metal.png");
 
+	shader.use();
+	shader.setInt("Texture", 0);
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -184,35 +193,25 @@ int main() {
 
 		// Clear color of the previous frame on the buffer
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT); // state-using function
 		
-		shader.use();
-		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-		// cubes
-		glBindVertexArray(cubeVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, cubeTexture);
-		// First cube
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		shader.setMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		// Secone cube
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		shader.setMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
-		// plane
-		glBindVertexArray(planeVAO);
-		glBindTexture(GL_TEXTURE_2D, floorTexture);
-		shader.setMat4("model", glm::mat4(1.0f));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
-		
+		// Drawing the plane and not update the stencil buffer
+		glStencilMask(0x00);
+		DrawPlane(shader, planeVAO, planeTexture);
+		// Draw two containers and update the stencil buffer
+		glStencilFunc(GL_ALWAYS, 1, 0xFF); // stencil testing always pass and replace stencil's content with 1s
+		glStencilMask(0xFF);
+		DrawTwoContainers(shader, cubeVAO, cubeTexture);
+		// Draw outline for two containers
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // only draw fragments that has stencil value not equal to 1
+		glStencilMask(0x00); // disable writing to the stencil buffer
+		glDisable(GL_DEPTH_TEST); // avoid the outline overlaps with the plane
+		DrawTwoContainers(outlineShader, cubeVAO, cubeTexture, 1.09f);
+		// Reset everything to default
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glEnable(GL_DEPTH_TEST);
+
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
@@ -276,6 +275,47 @@ void processInput(GLFWwindow* window) {
 		END Control Camera
 	=============================================
 	*/
+}
+
+void DrawPlane(Shader &shader, unsigned int VAO, unsigned int texture, float scaleFactor) {
+	shader.use();
+	glm::mat4 model = glm::mat4(1.0f);
+	model = glm::scale(model, glm::vec3(1.0f * scaleFactor, 1.0f * scaleFactor, 1.0f * scaleFactor));
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
+	shader.setMat4("view", view);
+	shader.setMat4("projection", projection);
+	shader.setMat4("model", model);
+
+	glBindVertexArray(VAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glDrawArrays(GL_TRIANGLES, 0, 6);
+	glBindVertexArray(0);
+}
+
+void DrawTwoContainers(Shader& shader, unsigned int VAO, unsigned int texture, float scaleFactor) {
+	shader.use();
+	glm::mat4 view = camera.GetViewMatrix();
+	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
+	shader.setMat4("view", view);
+	shader.setMat4("projection", projection);
+	// cubes
+	glBindVertexArray(VAO);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, texture);
+	glm::vec3 cubePositions[] = {
+		glm::vec3(-1.0f, 0.0f, -1.0f),
+		glm::vec3(2.0f, 0.0f, 0.0f)
+	};
+	for (unsigned int i = 0; i < 2; i++) {
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, cubePositions[i]);
+		model = glm::scale(model, glm::vec3(1.0f * scaleFactor, 1.0f * scaleFactor, 1.0f * scaleFactor));
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+	}
+	glBindVertexArray(0);
 }
 
 void setPointLight(Shader& shader, int index, glm::vec3 position, glm::vec3 color) {

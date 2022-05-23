@@ -77,6 +77,12 @@
     <None Include="depth-test-fragment.glsl">
       <Filter>Source Files\Depth Testing</Filter>
     </None>
+    <None Include="outline-vertex.glsl">
+      <Filter>Source Files\Cubes</Filter>
+    </None>
+    <None Include="outline-fragment.glsl">
+      <Filter>Source Files\Cubes</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
