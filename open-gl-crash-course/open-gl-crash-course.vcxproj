@@ -78,8 +78,8 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Users\ASUS\Desktop\OpenGL\opengl-third-party\Include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Users\ASUS\Desktop\OpenGL\opengl-third-party\Libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Users\ASUS\source\repos\open-gl-crash-course\opengl-third-party\Include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Users\ASUS\source\repos\open-gl-crash-course\opengl-third-party\Libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>

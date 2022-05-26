@@ -86,6 +86,7 @@ int main() {
 	// => Auto set by OpenGL
 	glBlendFunc(GL_SRC_ALPHA /*Set source factor equal to the source color alpha*/, 
 		GL_ONE_MINUS_SRC_ALPHA /*Set destination factor equal to 1 - source color alpha*/);
+	
 	// Light source shader
 	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
 	Shader blendingShader("blending-vertex.glsl", "blending-fragment.glsl");
@@ -189,7 +190,7 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	// Windows
+	// Window
 	unsigned int blendingObjVAO, blendingObjVBO;
 	glGenVertexArrays(1, &blendingObjVAO);
 	glGenBuffers(1, &blendingObjVBO);
@@ -210,7 +211,7 @@ int main() {
 	// Semi-transparent window texture (.png)
 	unsigned int windowTexture = loadTexture("resources/textures/blending/blending_transparent_window.png", "change-wrapping");
 
-	// Grass positions
+	// Windows positions
 	vector<glm::vec3> windows;
 	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
 	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.51f));
