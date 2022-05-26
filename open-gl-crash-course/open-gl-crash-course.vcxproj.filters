@@ -85,6 +85,8 @@
     </None>
     <None Include="blending-fragment.glsl">
       <Filter>Source Files\Blending</Filter>
+    <None Include="YellowFragmentShader.glsl">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

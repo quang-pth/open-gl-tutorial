@@ -225,7 +225,7 @@ int main() {
 	blendingShader.setInt("Texture", 0);
 
 	// Render loop
-	while(!glfwWindowShouldClose(window)) {
+	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 
@@ -235,7 +235,6 @@ int main() {
 		// Clear color of the previous frame on the buffer
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
-		
 		shader.use();
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = camera.GetViewMatrix();
@@ -282,7 +281,6 @@ int main() {
 			blendingShader.setMat4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
-		glBindVertexArray(0);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
@@ -325,7 +323,7 @@ void processInput(GLFWwindow* window) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
-	/* 
+	/*
 	=============================================
 		START Control Camera
 	=============================================
@@ -367,11 +365,9 @@ unsigned int loadTexture(const char* path, const char* name) {
 	glGenTextures(1, &textureID);
 	// Load and generate the Texture
 	int width, height, nrChannels;
-	
 	stbi_set_flip_vertically_on_load(true); // flip loaded texture's on the y-axis.
-	
 	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0); // get image width, height and color channels
-	
+
 	if (data) {
 		// Set texture color channels
 		GLenum format = GL_RGB;
@@ -390,7 +386,7 @@ unsigned int loadTexture(const char* path, const char* name) {
 			format /*format to store the image*/, width, height, 0,
 			format /*format of the source image*/, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
-		
+
 		// Set the texture wrapping parameters
 		// S, T, R (3D texture) => x, y, z axis
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrappingFormat); // set mirror mode on texture x axis
