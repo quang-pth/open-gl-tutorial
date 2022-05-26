@@ -15,7 +15,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-unsigned int loadTexture(const char* path);
+unsigned int loadTexture(const char* path, const char* name = NULL);
 void setPointLight(Shader &shader, int index, glm::vec3 position, glm::vec3 color);
 
 const unsigned int SCR_WIDTH = 800;
@@ -80,6 +80,7 @@ int main() {
 	
 	// Light source shader
 	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
+	Shader blendingShader("blending-vertex.glsl", "blending-fragment.glsl");
 
 	float cubeVertices[] = {
 		// positions          // texture Coords
@@ -135,6 +136,16 @@ int main() {
 		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
 		 5.0f, -0.501f, -5.0f,  2.0f, 2.0f
 	};
+	float grassVertices[] = {
+		// positions  // texture Coords
+		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+		0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+
+		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+		1.0f,  0.5f,  0.0f,  1.0f,  1.0f
+	};
 
 	// Cube 
 	unsigned int cubeVAO, cubeVBO;
@@ -162,17 +173,40 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
 	// Position attribute
-	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
 	// Texture coords attribute
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	// Grass
+	unsigned int grassVAO, grassVBO;
+	glGenVertexArrays(1, &grassVAO);
+	glGenBuffers(1, &grassVBO);
+	glBindVertexArray(grassVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(grassVertices), grassVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
 	// Load cube texture 
 	unsigned int cubeTexture = loadTexture("resources/textures/depth-testing/marble.jpg");
 	unsigned int floorTexture = loadTexture("resources/textures/depth-testing/metal.png");
+	unsigned int grassTexture = loadTexture("resources/textures/blending/grass.png", "grass");
+
+	// Grass positions
+	vector<glm::vec3> vegetation;
+	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
+	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.51f));
+	vegetation.push_back(glm::vec3(0.0f, 0.0f, -0.7f));
+	vegetation.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
+	vegetation.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -212,7 +246,21 @@ int main() {
 		shader.setMat4("model", glm::mat4(1.0f));
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
-		
+
+		// grass
+		blendingShader.use();
+		glBindVertexArray(grassVAO);
+		glBindTexture(GL_TEXTURE_2D, grassTexture);
+		blendingShader.setMat4("view", view);
+		blendingShader.setMat4("projection", projection);
+		for (unsigned int i = 0; i < vegetation.size(); i++) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, vegetation[i]);
+			blendingShader.setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
+		glBindVertexArray(0);
+
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
@@ -290,18 +338,19 @@ void setPointLight(Shader& shader, int index, glm::vec3 position, glm::vec3 colo
 	shader.setFloat(prefix + ".quadratic", 0.017f);
 }
 
-unsigned int loadTexture(const char* path) {
+unsigned int loadTexture(const char* path, const char* name) {
 	// Create Texture object
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 	// Load and generate the Texture
 	int width, height, nrChannels;
 	
-	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
+	stbi_set_flip_vertically_on_load(true); // flip loaded texture's on the y-axis.
 	
 	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0); // get image width, height and color channels
 	
 	if (data) {
+		// Set texture color channels
 		GLenum format = GL_RGB;
 		if (nrChannels == 1)
 			format = GL_RED;
@@ -309,6 +358,9 @@ unsigned int loadTexture(const char* path) {
 			format = GL_RGB;
 		else if (nrChannels == 4)
 			format = GL_RGBA;
+		// Set texture wrapping format
+		GLenum wrappingFormat = GL_REPEAT;
+		if (name == "grass") wrappingFormat = GL_CLAMP_TO_EDGE;
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
@@ -318,8 +370,8 @@ unsigned int loadTexture(const char* path) {
 		
 		// Set the texture wrapping parameters
 		// S, T, R (3D texture) => x, y, z axis
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrappingFormat); // set mirror mode on texture x axis
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrappingFormat); // set mirror mode on texture y axis
 		// Set Texture Filtering parameters
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
