@@ -10,6 +10,7 @@
 #include "model.h"
 
 #include <iostream>
+#include <map>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -77,6 +78,14 @@ int main() {
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
+
+	// Enable blening state
+	glEnable(GL_BLEND);
+	// Source color: fragment output color
+	// Destination color: color on color buffer
+	// => Auto set by OpenGL
+	glBlendFunc(GL_SRC_ALPHA /*Set source factor equal to the source color alpha*/, 
+		GL_ONE_MINUS_SRC_ALPHA /*Set destination factor equal to 1 - source color alpha*/);
 	
 	// Light source shader
 	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
@@ -136,7 +145,7 @@ int main() {
 		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
 		 5.0f, -0.501f, -5.0f,  2.0f, 2.0f
 	};
-	float grassVertices[] = {
+	float blendingObjVertices[] = {
 		// positions  // texture Coords
 		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
 		0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
@@ -182,12 +191,12 @@ int main() {
 	glBindVertexArray(0);
 
 	// Grass
-	unsigned int grassVAO, grassVBO;
-	glGenVertexArrays(1, &grassVAO);
-	glGenBuffers(1, &grassVBO);
-	glBindVertexArray(grassVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, grassVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(grassVertices), grassVertices, GL_STATIC_DRAW);
+	unsigned int blendingObjVAO, blendingObjVBO;
+	glGenVertexArrays(1, &blendingObjVAO);
+	glGenBuffers(1, &blendingObjVBO);
+	glBindVertexArray(blendingObjVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, blendingObjVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(blendingObjVertices), blendingObjVertices, GL_STATIC_DRAW);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
@@ -195,18 +204,25 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
 
-	// Load cube texture 
+	// Cube texture (.jpg)
 	unsigned int cubeTexture = loadTexture("resources/textures/depth-testing/marble.jpg");
+	// Floor texture (.png)
 	unsigned int floorTexture = loadTexture("resources/textures/depth-testing/metal.png");
-	unsigned int grassTexture = loadTexture("resources/textures/blending/grass.png", "grass");
+	// Semi-transparent window texture (.png)
+	unsigned int windowTexture = loadTexture("resources/textures/blending/blending_transparent_window.png", "change-wrapping");
 
 	// Grass positions
-	vector<glm::vec3> vegetation;
-	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
-	vegetation.push_back(glm::vec3(-1.5f, 0.0f, -0.51f));
-	vegetation.push_back(glm::vec3(0.0f, 0.0f, -0.7f));
-	vegetation.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
-	vegetation.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+	vector<glm::vec3> windows;
+	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
+	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.51f));
+	windows.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
+	windows.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
+	windows.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+
+	shader.use();
+	shader.setInt("Texture", 0);
+	blendingShader.use();
+	blendingShader.setInt("Texture", 0);
 
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
@@ -247,15 +263,22 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		glBindVertexArray(0);
 
-		// grass
+		// sort windows by distance
+		std::map<float, glm::vec3> sortedPositions;
+		for (unsigned int i = 0; i < windows.size(); i++) {
+			float distance = glm::length(camera.Position - windows[i]);
+			sortedPositions[distance] = windows[i]; // map sorts elements by key
+		}
+		// draw windows
 		blendingShader.use();
-		glBindVertexArray(grassVAO);
-		glBindTexture(GL_TEXTURE_2D, grassTexture);
+		glBindVertexArray(blendingObjVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, windowTexture);
 		blendingShader.setMat4("view", view);
 		blendingShader.setMat4("projection", projection);
-		for (unsigned int i = 0; i < vegetation.size(); i++) {
+		for (std::map<float, glm::vec3>::reverse_iterator pos = sortedPositions.rbegin(); pos != sortedPositions.rend(); ++pos) {
 			model = glm::mat4(1.0f);
-			model = glm::translate(model, vegetation[i]);
+			model = glm::translate(model, pos->second);
 			blendingShader.setMat4("model", model);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
@@ -360,7 +383,7 @@ unsigned int loadTexture(const char* path, const char* name) {
 			format = GL_RGBA;
 		// Set texture wrapping format
 		GLenum wrappingFormat = GL_REPEAT;
-		if (name == "grass") wrappingFormat = GL_CLAMP_TO_EDGE;
+		if (name == "change-wrapping") wrappingFormat = GL_CLAMP_TO_EDGE;
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,

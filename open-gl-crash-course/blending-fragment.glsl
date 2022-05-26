@@ -8,11 +8,5 @@ uniform sampler2D Texture;
 
 void main() {
 	vec4 fragmentColor = texture(Texture, TexCoords);
-
-	// Discard transparent fragment
-	if (fragmentColor.a < 0.1) {
-		discard;
-	}
-	
 	FragColor = fragmentColor;
 }
