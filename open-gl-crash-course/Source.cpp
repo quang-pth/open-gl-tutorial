@@ -78,8 +78,7 @@ int main() {
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LESS);
-
-	// Enable blening state
+	// Enable blending state
 	glEnable(GL_BLEND);
 	// Source color: fragment output color
 	// Destination color: color on color buffer
@@ -87,53 +86,58 @@ int main() {
 	glBlendFunc(GL_SRC_ALPHA /*Set source factor equal to the source color alpha*/, 
 		GL_ONE_MINUS_SRC_ALPHA /*Set destination factor equal to 1 - source color alpha*/);
 	
+	// Enable face culling
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK /*discard back-facing fragments*/);
+	glFrontFace(GL_CCW /*set triangle with counter-clockwise winding order as front-facing face*/);
+
 	// Light source shader
 	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
 	Shader blendingShader("blending-vertex.glsl", "blending-fragment.glsl");
 
 	float cubeVertices[] = {
-		// positions          // texture Coords
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+		// back face
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
+		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+		 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, // bottom-right
+		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
+		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, // top-left
+		// front face
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+		 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, // bottom-right
+		 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, // top-right
+		 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, // top-right
+		-0.5f,  0.5f, 0.5f, 0.0f, 1.0f, // top-left
+		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+		// left face
+		-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-right
+		-0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-left
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+		-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-right
+		-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-right
+		// right face
+		0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-left
+		0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
+		0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+		0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
+		0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-left
+		0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-left
+		// bottom face
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+		 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // top-left
+		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // bottom-left
+		 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // bottom-left
+		-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-right
+		-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+		// top face
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+		 0.5f, 0.5f,  0.5f, 1.0f, 0.0f, // bottom-right
+		 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-right
+		 0.5f, 0.5f,  0.5f, 1.0f, 0.0f, // bottom-right
+		-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+		-0.5f, 0.5f,  0.5f, 0.0f, 0.0f // bottom-left
 	};
 	float planeVertices[] = {
 		// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
@@ -235,13 +239,17 @@ int main() {
 		// Clear color of the previous frame on the buffer
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
+		
+		
 		shader.use();
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
+		
 		// cubes
+		glEnable(GL_CULL_FACE);
 		glBindVertexArray(cubeVAO);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, cubeTexture);
@@ -256,6 +264,7 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		
 		// plane
+		glDisable(GL_CULL_FACE);
 		glBindVertexArray(planeVAO);
 		glBindTexture(GL_TEXTURE_2D, floorTexture);
 		shader.setMat4("model", glm::mat4(1.0f));
