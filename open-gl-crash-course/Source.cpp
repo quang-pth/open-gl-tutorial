@@ -10,12 +10,13 @@
 #include "model.h"
 
 #include <iostream>
+#include <map>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-unsigned int loadTexture(const char* path);
+unsigned int loadTexture(const char* path, const char* name = NULL);
 void setPointLight(Shader &shader, int index, glm::vec3 position, glm::vec3 color);
 
 const unsigned int SCR_WIDTH = 800;
@@ -76,87 +77,151 @@ int main() {
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LESS);
 
+	// Enable blening state
+	glEnable(GL_BLEND);
+	// Source color: fragment output color
+	// Destination color: color on color buffer
+	// => Auto set by OpenGL
+	glBlendFunc(GL_SRC_ALPHA /*Set source factor equal to the source color alpha*/, 
+		GL_ONE_MINUS_SRC_ALPHA /*Set destination factor equal to 1 - source color alpha*/);
 	// Light source shader
-	Shader pointLightShader("LightSourceVertexShader.glsl", "LightSourceFragmentShader.glsl");
-	// Model shader
-	Shader modelShader("model_loading_vertex.glsl", "model_loading_fragment.glsl");
-	Model ourModel("resources/objects/backpack/backpack.obj");
+	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
+	Shader blendingShader("blending-vertex.glsl", "blending-fragment.glsl");
 
-	float vertices[] = {
-		// positions          // normals           // texture coords
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+	float cubeVertices[] = {
+		// positions          // texture Coords
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+	};
+	float planeVertices[] = {
+		// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
+		 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
+		-5.0f, -0.501f,  5.0f,  0.0f, 0.0f,
+
+		 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
+		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
+		 5.0f, -0.501f, -5.0f,  2.0f, 2.0f
+	};
+	float blendingObjVertices[] = {
+		// positions  // texture Coords
+		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+		0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+
+		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
+		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
+		1.0f,  0.5f,  0.0f,  1.0f,  1.0f
 	};
 
-	// point light's positions
-	glm::vec3 pointLightPositions[] = {
-		glm::vec3(3.0f, 0.5f, 3.0f),
-		glm::vec3(3.0f, 0.5f, -3.0f),
-		glm::vec3(-3.0f, 0.5f, -3.0f),
-		glm::vec3(-3.0f, 0.5f, 3.0f)
-	};
-	// point light's colors
-	glm::vec3 pointLightColors[] = {
-		glm::vec3(.3f, .0f, 1.0f),
-		glm::vec3(.9f, .1f, .12f),
-		glm::vec3(.01f, .022f, .54f),
-		glm::vec3(.2f, 1.0f, .0f),
-	};
-
-	// Light Source
-	unsigned int lightVAO, lightVBO;
-	glGenVertexArrays(1, &lightVAO);
-	glGenBuffers(1, &lightVBO);
-	glBindVertexArray(lightVAO);
+	// Cube 
+	unsigned int cubeVAO, cubeVBO;
+	glGenVertexArrays(1, &cubeVAO);
+	glGenBuffers(1, &cubeVBO);
+	glBindVertexArray(cubeVAO);
 	// config VBO
-	glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// light source vertex position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
+	// cube position attribute
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	// cube texture coords attribute
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	// unbind vbo and vao
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
+	
+	// Plane
+	unsigned int planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
+	// Position attribute
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	// Texture coords attribute
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	// Windows
+	unsigned int blendingObjVAO, blendingObjVBO;
+	glGenVertexArrays(1, &blendingObjVAO);
+	glGenBuffers(1, &blendingObjVBO);
+	glBindVertexArray(blendingObjVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, blendingObjVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(blendingObjVertices), blendingObjVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+
+	// Cube texture (.jpg)
+	unsigned int cubeTexture = loadTexture("resources/textures/depth-testing/marble.jpg");
+	// Floor texture (.png)
+	unsigned int floorTexture = loadTexture("resources/textures/depth-testing/metal.png");
+	// Semi-transparent window texture (.png)
+	unsigned int windowTexture = loadTexture("resources/textures/blending/blending_transparent_window.png", "change-wrapping");
+
+	// Grass positions
+	vector<glm::vec3> windows;
+	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
+	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.51f));
+	windows.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
+	windows.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
+	windows.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+
+	shader.use();
+	shader.setInt("Texture", 0);
+	blendingShader.use();
+	blendingShader.setInt("Texture", 0);
 
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -169,53 +234,51 @@ int main() {
 		// Clear color of the previous frame on the buffer
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
-
-		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetViewMatrix();
+		shader.use();
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		// cubes
+		glBindVertexArray(cubeVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		// First cube
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		// Secone cube
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		
+		// plane
+		glBindVertexArray(planeVAO);
+		glBindTexture(GL_TEXTURE_2D, floorTexture);
+		shader.setMat4("model", glm::mat4(1.0f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindVertexArray(0);
 
-		modelShader.use();
-		modelShader.setMat4("projection", projection);
-		modelShader.setMat4("view", view);
-		modelShader.setMat4("model", model);
-		// Set directional light
-		glm::vec3 lightProperties[] = {
-			glm::vec3(0.3f, 0.3f, 0.3f), // ambient
-			glm::vec3(1.0f, 1.0f, 1.0f), // diffuse
-			glm::vec3(1.0f, 1.0f, 1.0f), // specular
-		};
-		modelShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		modelShader.setVec3("dirLight.ambient", lightProperties[0]);
-		modelShader.setVec3("dirLight.diffuse", lightProperties[1]);
-		modelShader.setVec3("dirLight.specular", lightProperties[2]);
-		// Set light points
-		float sinFactor = sin(glfwGetTime());
-		float cosFactor = cos(glfwGetTime());
-		for (unsigned int i = 0; i < 4; i++) {
-			// Move the light point
-			glm::vec3 newPos = glm::vec3(pointLightPositions[i].x * sinFactor, pointLightPositions[i].y * sinFactor * cosFactor, pointLightPositions[i].z * cosFactor);
-			setPointLight(modelShader, i, newPos, pointLightColors[i]);
+		// sort windows by distance
+		std::map<float, glm::vec3> sortedPositions;
+		for (unsigned int i = 0; i < windows.size(); i++) {
+			float distance = glm::length(camera.Position - windows[i]);
+			sortedPositions[distance] = windows[i]; // map sorts elements by key
 		}
-		ourModel.Draw(modelShader);
-		// Light Source Cube
-		pointLightShader.use();
-		pointLightShader.setMat4("view", view);
-		pointLightShader.setMat4("projection", projection);
-		// Render 4 light points
-		glBindVertexArray(lightVAO);
-		for (unsigned int i = 0; i < 4; i++) {
-			glm::mat4 lightModel = glm::mat4(1.0f);
-			glm::vec3 newPos = glm::vec3(pointLightPositions[i].x * sinFactor, pointLightPositions[i].y * sinFactor * cosFactor, pointLightPositions[i].z * cosFactor);
-			lightModel = glm::translate(lightModel, newPos);
-			lightModel = glm::scale(lightModel, glm::vec3(1.0f, 1.0f, 1.0f));
-			pointLightShader.setMat4("model", lightModel);
-			// set light cube color
-			pointLightShader.setVec3("color", pointLightColors[i]);
-			// Draw light cube
-			glDrawArrays(GL_TRIANGLES, 0, 36);
+		// draw windows
+		blendingShader.use();
+		glBindVertexArray(blendingObjVAO);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, windowTexture);
+		blendingShader.setMat4("view", view);
+		blendingShader.setMat4("projection", projection);
+		for (std::map<float, glm::vec3>::reverse_iterator pos = sortedPositions.rbegin(); pos != sortedPositions.rend(); ++pos) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, pos->second);
+			blendingShader.setMat4("model", model);
+			glDrawArrays(GL_TRIANGLES, 0, 6);
 		}
 
 		glfwSwapBuffers(window);
@@ -295,20 +358,17 @@ void setPointLight(Shader& shader, int index, glm::vec3 position, glm::vec3 colo
 	shader.setFloat(prefix + ".quadratic", 0.017f);
 }
 
-
-
-unsigned int loadTexture(const char* path) {
+unsigned int loadTexture(const char* path, const char* name) {
 	// Create Texture object
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 	// Load and generate the Texture
 	int width, height, nrChannels;
-
-	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-
+	stbi_set_flip_vertically_on_load(true); // flip loaded texture's on the y-axis.
 	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0); // get image width, height and color channels
 
 	if (data) {
+		// Set texture color channels
 		GLenum format = GL_RGB;
 		if (nrChannels == 1)
 			format = GL_RED;
@@ -316,6 +376,9 @@ unsigned int loadTexture(const char* path) {
 			format = GL_RGB;
 		else if (nrChannels == 4)
 			format = GL_RGBA;
+		// Set texture wrapping format
+		GLenum wrappingFormat = GL_REPEAT;
+		if (name == "change-wrapping") wrappingFormat = GL_CLAMP_TO_EDGE;
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
@@ -325,8 +388,8 @@ unsigned int loadTexture(const char* path) {
 
 		// Set the texture wrapping parameters
 		// S, T, R (3D texture) => x, y, z axis
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrappingFormat); // set mirror mode on texture x axis
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrappingFormat); // set mirror mode on texture y axis
 		// Set Texture Filtering parameters
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up

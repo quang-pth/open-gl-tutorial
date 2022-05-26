@@ -151,6 +151,10 @@
     <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="blending-fragment.glsl" />
+    <None Include="blending-vertex.glsl" />
+    <None Include="depth-test-fragment.glsl" />
+    <None Include="depth-test-vertex.glsl" />
     <None Include="FragmentShader.glsl" />
     <None Include="LightSourceFragmentShader.glsl" />
     <None Include="LightSourceVertexShader.glsl" />

@@ -25,6 +25,12 @@
     <Filter Include="Source Files\Misc">
       <UniqueIdentifier>{139de2b9-ab95-41a2-94a9-53e1df199254}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Depth Testing">
+      <UniqueIdentifier>{f03db286-329b-4d3e-8558-28bea5a7611a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Blending">
+      <UniqueIdentifier>{3f4d930f-2973-4a98-a382-34c2e2897825}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -68,6 +74,17 @@
     <None Include="VertexShader.glsl">
       <Filter>Source Files\Cubes</Filter>
     </None>
+    <None Include="depth-test-vertex.glsl">
+      <Filter>Source Files\Depth Testing</Filter>
+    </None>
+    <None Include="depth-test-fragment.glsl">
+      <Filter>Source Files\Depth Testing</Filter>
+    </None>
+    <None Include="blending-vertex.glsl">
+      <Filter>Source Files\Blending</Filter>
+    </None>
+    <None Include="blending-fragment.glsl">
+      <Filter>Source Files\Blending</Filter>
     <None Include="YellowFragmentShader.glsl">
       <Filter>Source Files</Filter>
     </None>
