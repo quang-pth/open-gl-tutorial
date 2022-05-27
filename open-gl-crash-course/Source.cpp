@@ -17,7 +17,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 unsigned int loadTexture(const char* path, const char* name = NULL);
 void setPointLight(Shader &shader, int index, glm::vec3 position, glm::vec3 color);
-unsigned int bindVertexToVAO(float vertices[]);
+void bindVertexToVAO(unsigned int &VAO, unsigned int &VBO, float vertices[]);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -149,10 +149,8 @@ int main() {
 	glBindVertexArray(cubeVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	// Position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	// Texture coords attribute
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -164,10 +162,8 @@ int main() {
 	glBindVertexArray(planeVAO);
 	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-	// Position attribute
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
-	// Texture coords attribute
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -416,8 +412,7 @@ unsigned int loadTexture(const char* path, const char* name) {
 	return textureID;
 }
 
-unsigned int bindVertexToVAO(float verticesData[]) {
-	unsigned int VAO, VBO;
+void bindVertexToVAO(unsigned int &VAO, unsigned int &VBO, float verticesData[]) {
 	glGenVertexArrays(1, &VAO);
 	glGenBuffers(1, &VBO);
 	glBindVertexArray(VAO);
@@ -429,5 +424,4 @@ unsigned int bindVertexToVAO(float verticesData[]) {
 	glEnableVertexAttribArray(1);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-	return VAO;
 }
