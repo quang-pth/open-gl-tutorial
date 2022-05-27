@@ -139,8 +139,8 @@ int main() {
 		return -1;
 	}
 	// Light source shader
-	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
-	Shader screenShader("normal-vertex.glsl", "normal-fragment.glsl");
+	Shader shader("framebuffer-vs.glsl", "framebuffer-fs.glsl");
+	Shader screenShader("screen-framebuffer-vs.glsl", "screen-framebuffer-fs.glsl");
 
 	// Cube
 	unsigned int cubeVAO, cubeVBO;

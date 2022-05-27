@@ -69,8 +69,18 @@
     <None Include="VertexShader.glsl">
       <Filter>Lighting</Filter>
     </None>
-    <None Include="normal-vertex.glsl" />
-    <None Include="normal-fragment.glsl" />
+    <None Include="screen-framebuffer-fs.glsl">
+      <Filter>Framebuffer</Filter>
+    </None>
+    <None Include="screen-framebuffer-vs.glsl">
+      <Filter>Framebuffer</Filter>
+    </None>
+    <None Include="framebuffer-vs.glsl">
+      <Filter>Framebuffer</Filter>
+    </None>
+    <None Include="framebuffer-fs.glsl">
+      <Filter>Framebuffer</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Blending">
@@ -93,6 +103,9 @@
     </Filter>
     <Filter Include="Others">
       <UniqueIdentifier>{8ea607e2-2560-4550-906f-719196d8c0ea}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Framebuffer">
+      <UniqueIdentifier>{18d942e4-7fda-47bd-9394-c69ffcab24bc}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

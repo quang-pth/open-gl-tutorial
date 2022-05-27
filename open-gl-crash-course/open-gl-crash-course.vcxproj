@@ -156,12 +156,14 @@
     <None Include="depth-test-fragment.glsl" />
     <None Include="depth-test-vertex.glsl" />
     <None Include="FragmentShader.glsl" />
+    <None Include="framebuffer-fs.glsl" />
+    <None Include="framebuffer-vs.glsl" />
     <None Include="LightSourceFragmentShader.glsl" />
     <None Include="LightSourceVertexShader.glsl" />
     <None Include="model_loading_fragment.glsl" />
     <None Include="model_loading_vertex.glsl" />
-    <None Include="normal-fragment.glsl" />
-    <None Include="normal-vertex.glsl" />
+    <None Include="screen-framebuffer-fs.glsl" />
+    <None Include="screen-framebuffer-vs.glsl" />
     <None Include="VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
