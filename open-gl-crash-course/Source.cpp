@@ -9,6 +9,11 @@
 #include"camera.h"
 #include "model.h"
 
+#include"vao.h"
+#include"vbo.h"
+#include"fbo.h"
+#include"texture_buffer.h"
+
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -17,7 +22,6 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 unsigned int loadTexture(const char* path, const char* name = NULL);
 void setPointLight(Shader &shader, int index, glm::vec3 position, glm::vec3 color);
-void bindVertexToVAO(unsigned int &VAO, unsigned int &VBO, float vertices[]);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -143,73 +147,38 @@ int main() {
 	Shader screenShader("screen-framebuffer-vs.glsl", "screen-framebuffer-fs.glsl");
 
 	// Cube
-	unsigned int cubeVAO, cubeVBO;
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glBindVertexArray(cubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	VAO cubeVAO;
+	VBO cubeVBO(cubeVertices, sizeof(cubeVertices));
+	cubeVAO.bind();
+	cubeVAO.linkAttrib(cubeVBO, 0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
+	cubeVAO.linkAttrib(cubeVBO, 1, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	cubeVAO.unbind();
+
 	// Plane
-	unsigned int planeVAO, planeVBO;
-	glGenVertexArrays(1, &planeVAO);
-	glGenBuffers(1, &planeVBO);
-	glBindVertexArray(planeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	VAO planeVAO;
+	VBO planeVBO(planeVertices, sizeof(planeVertices));
+	planeVAO.bind();
+	planeVAO.linkAttrib(planeVBO, 0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
+	planeVAO.linkAttrib(planeVBO, 1, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	planeVAO.unbind();
 
 	// Quad
-	unsigned int quadVAO, quadVBO;
-	glGenVertexArrays(1, &quadVAO);
-	glGenBuffers(1, &quadVBO);
-	glBindVertexArray(quadVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
-	// Position attribute
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// Texture coords attribute
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	VAO quadVAO;
+	VBO quadVBO(quadVertices, sizeof(quadVertices));
+	quadVAO.bind();
+	quadVAO.linkAttrib(quadVBO, 0, 2, GL_FLOAT, 4 * sizeof(float), (void*)0);
+	quadVAO.linkAttrib(quadVBO, 1, 2, GL_FLOAT, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	quadVAO.unbind();
 
-	// Gen framebuffer
-	unsigned int FBO;
-	glGenFramebuffers(1, &FBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-	// Attach the texture color buffer to the current binding FBO
-	unsigned int texColorBuffer;
-	glGenTextures(1, &texColorBuffer);
-	glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0,
-		GL_RGB, GL_UNSIGNED_BYTE, NULL /*we just alocate a memory for this texture - not fill it*/);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glBindTexture(GL_TEXTURE_2D, 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0);
-	// Attach the stencil buffer and depth buffer via Renderbuffer objects (RBO) to the FBO
-	unsigned int RBO;
-	glGenRenderbuffers(1, &RBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, RBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, RBO);
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-		cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
-	}
-	glBindRenderbuffer(GL_RENDERBUFFER, 0);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//// Gen framebuffer
+	FBO fbo;
+	TextureBuffer texColorBuffer(SCR_WIDTH, SCR_HEIGHT);
+	RBO rbo(SCR_WIDTH, SCR_HEIGHT);
+	fbo.bind();
+	fbo.linkTexture(texColorBuffer);
+	fbo.linkRenderBuffer(rbo);
+	fbo.checkCompileFramebuffer();
+	fbo.unbind();
 
 	// Cube texture (.jpg)
 	unsigned int cubeTexture = loadTexture("Textures/container.jpg");
@@ -224,6 +193,7 @@ int main() {
 	
 	// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -231,7 +201,7 @@ int main() {
 		processInput(window);
 
 		// Use our defined Framebuffer to draw screen
-		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
+		fbo.bind();
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // state-using function
 		glEnable(GL_DEPTH_TEST);
@@ -242,9 +212,8 @@ int main() {
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		// cubes
-		glBindVertexArray(cubeVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		cubeVAO.bind();
+		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, cubeTexture);
 		// First cube
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
@@ -255,25 +224,25 @@ int main() {
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
+		cubeVAO.unbind();
+
 		// plane
-		glBindVertexArray(planeVAO);
-		glBindTexture(GL_TEXTURE_2D, planeTexture);
+		planeVAO.bind();
+		planeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, planeTexture);
 		shader.setMat4("model", glm::mat4(1.0f));
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		planeVAO.unbind();
 
 		// Draw second screen using default framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		fbo.unbind();
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // state-using function
 		glDisable(GL_DEPTH_TEST);
 		screenShader.use();
-		glBindVertexArray(quadVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+		quadVAO.bind();
+		quadVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, texColorBuffer.textureID);
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		quadVAO.unbind();
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
@@ -281,16 +250,14 @@ int main() {
 
 		lastFrame = currentFrame;
 	}
-	// Clear VAO
-	glDeleteVertexArrays(1, &cubeVAO);
-	glDeleteVertexArrays(1, &planeVAO);
-	glDeleteVertexArrays(1, &quadVAO);
-	// Clear VBO
-	glDeleteBuffers(1, &cubeVBO);
-	glDeleteBuffers(1, &planeVBO);
-	glDeleteBuffers(1, &quadVBO);
-	// Clear framebuffers
-	glDeleteFramebuffers(1, &FBO);
+
+	// Clear Objects
+	cubeVAO.deleteObj();
+	planeVBO.deleteObj();
+	quadVAO.deleteObj();
+	cubeVBO.deleteObj();
+	planeVBO.deleteObj();
+	quadVBO.deleteObj();
 
 	glfwTerminate();
 	return 0;
@@ -410,18 +377,4 @@ unsigned int loadTexture(const char* path, const char* name) {
 	stbi_image_free(data);
 
 	return textureID;
-}
-
-void bindVertexToVAO(unsigned int &VAO, unsigned int &VBO, float verticesData[]) {
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verticesData), verticesData, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
 }
