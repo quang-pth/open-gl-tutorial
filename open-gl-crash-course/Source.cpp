@@ -9,8 +9,12 @@
 #include"camera.h"
 #include "model.h"
 
+#include"vao.h"
+#include"vbo.h"
+#include"fbo.h"
+#include"texture_buffer.h"
+
 #include <iostream>
-#include <map>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -37,6 +41,71 @@ float lastFrame = 0.0f; // time of the last frame
 
 // Light Source Position
 glm::vec3 lightPos(1.2f, 5.0f, 5.0f);
+
+float cubeVertices[] = {
+	// back face
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
+	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, // bottom-right
+	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
+	-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, // top-left
+	// front face
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+	 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, // bottom-right
+	 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, // top-right
+	 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, // top-right
+	-0.5f,  0.5f, 0.5f, 0.0f, 1.0f, // top-left
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+	// left face
+	-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-right
+	-0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-left
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+	-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-right
+	-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-right
+	// right face
+	 0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-left
+	 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
+	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
+	 0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-left
+	 0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-left
+	// bottom face
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+	 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // top-left
+	 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // bottom-left
+	 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // bottom-left
+	-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-right
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+	// top face
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+	-0.5f, 0.5f,  0.5f, 0.0f, 0.0f, // bottom-left
+	 0.5f, 0.5f,  0.5f, 1.0f, 0.0f, // bottom-right
+	 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+	 0.5f, 0.5f,  0.5f, 1.0f, 0.0f, // bottom-right
+};
+float planeVertices[] = {
+	// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+	-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
+	 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
+	-5.0f, -0.501f,  5.0f,  0.0f, 0.0f,
+
+	 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
+	-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
+	 5.0f, -0.501f, -5.0f,  2.0f, 2.0f
+};
+float quadVertices[] = {
+	// positions // texCoords
+	-1.0f,  1.0f, 0.0f, 1.0f,
+	-1.0f, -1.0f, 0.0f, 0.0f,
+	 1.0f, -1.0f, 1.0f, 0.0f,
+
+	-1.0f,  1.0f, 0.0f, 1.0f,
+	 1.0f, -1.0f, 1.0f, 0.0f,
+	 1.0f,  1.0f, 1.0f, 1.0f
+};
 
 int main() {
 	glfwInit();
@@ -73,179 +142,80 @@ int main() {
 		std::cout << "Failed to init GLAD" << std::endl;
 		return -1;
 	}
-
-	// configure global opengl state
-	// -----------------------------
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-
-	// Enable blening state
-	glEnable(GL_BLEND);
-	// Source color: fragment output color
-	// Destination color: color on color buffer
-	// => Auto set by OpenGL
-	glBlendFunc(GL_SRC_ALPHA /*Set source factor equal to the source color alpha*/, 
-		GL_ONE_MINUS_SRC_ALPHA /*Set destination factor equal to 1 - source color alpha*/);
-	
 	// Light source shader
-	Shader shader("depth-test-vertex.glsl", "depth-test-fragment.glsl");
-	Shader blendingShader("blending-vertex.glsl", "blending-fragment.glsl");
+	Shader shader("framebuffer-vs.glsl", "framebuffer-fs.glsl");
+	Shader screenShader("screen-framebuffer-vs.glsl", "screen-framebuffer-fs.glsl");
 
-	float cubeVertices[] = {
-		// positions          // texture Coords
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+	// Cube
+	VAO cubeVAO;
+	VBO cubeVBO(cubeVertices, sizeof(cubeVertices));
+	cubeVAO.bind();
+	cubeVAO.linkAttrib(cubeVBO, 0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
+	cubeVAO.linkAttrib(cubeVBO, 1, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	cubeVAO.unbind();
 
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-	};
-	float planeVertices[] = {
-		// positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
-		 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.501f,  5.0f,  0.0f, 0.0f,
-
-		 5.0f, -0.501f,  5.0f,  2.0f, 0.0f,
-		-5.0f, -0.501f, -5.0f,  0.0f, 2.0f,
-		 5.0f, -0.501f, -5.0f,  2.0f, 2.0f
-	};
-	float blendingObjVertices[] = {
-		// positions  // texture Coords
-		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		0.0f, -0.5f,  0.0f,  0.0f,  0.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
-
-		0.0f,  0.5f,  0.0f,  0.0f,  1.0f,
-		1.0f, -0.5f,  0.0f,  1.0f,  0.0f,
-		1.0f,  0.5f,  0.0f,  1.0f,  1.0f
-	};
-
-	// Cube 
-	unsigned int cubeVAO, cubeVBO;
-	glGenVertexArrays(1, &cubeVAO);
-	glGenBuffers(1, &cubeVBO);
-	glBindVertexArray(cubeVAO);
-	// config VBO
-	glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), cubeVertices, GL_STATIC_DRAW);
-	// cube position attribute
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	// cube texture coords attribute
-	glEnableVertexAttribArray(1);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	// unbind vbo and vao
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
-	
 	// Plane
-	unsigned int planeVAO, planeVBO;
-	glGenVertexArrays(1, &planeVAO);
-	glGenBuffers(1, &planeVBO);
-	glBindVertexArray(planeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), planeVertices, GL_STATIC_DRAW);
-	// Position attribute
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// Texture coords attribute
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	VAO planeVAO;
+	VBO planeVBO(planeVertices, sizeof(planeVertices));
+	planeVAO.bind();
+	planeVAO.linkAttrib(planeVBO, 0, 3, GL_FLOAT, 5 * sizeof(float), (void*)0);
+	planeVAO.linkAttrib(planeVBO, 1, 2, GL_FLOAT, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+	planeVAO.unbind();
 
-	// Window
-	unsigned int blendingObjVAO, blendingObjVBO;
-	glGenVertexArrays(1, &blendingObjVAO);
-	glGenBuffers(1, &blendingObjVBO);
-	glBindVertexArray(blendingObjVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, blendingObjVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(blendingObjVertices), blendingObjVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	// Quad
+	VAO quadVAO;
+	VBO quadVBO(quadVertices, sizeof(quadVertices));
+	quadVAO.bind();
+	quadVAO.linkAttrib(quadVBO, 0, 2, GL_FLOAT, 4 * sizeof(float), (void*)0);
+	quadVAO.linkAttrib(quadVBO, 1, 2, GL_FLOAT, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+	quadVAO.unbind();
+
+	//// Gen framebuffer
+	FBO fbo;
+	TextureBuffer texColorBuffer(SCR_WIDTH, SCR_HEIGHT);
+	RBO rbo(SCR_WIDTH, SCR_HEIGHT);
+	fbo.bind();
+	fbo.linkTexture(texColorBuffer);
+	fbo.linkRenderBuffer(rbo);
+	fbo.checkCompileFramebuffer();
+	fbo.unbind();
 
 	// Cube texture (.jpg)
-	unsigned int cubeTexture = loadTexture("resources/textures/depth-testing/marble.jpg");
+	unsigned int cubeTexture = loadTexture("Textures/container.jpg");
 	// Floor texture (.png)
-	unsigned int floorTexture = loadTexture("resources/textures/depth-testing/metal.png");
-	// Semi-transparent window texture (.png)
-	unsigned int windowTexture = loadTexture("resources/textures/blending/blending_transparent_window.png", "change-wrapping");
-
-	// Windows positions
-	vector<glm::vec3> windows;
-	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.48f));
-	windows.push_back(glm::vec3(-1.5f, 0.0f, -0.51f));
-	windows.push_back(glm::vec3(0.0f, 0.0f, 0.7f));
-	windows.push_back(glm::vec3(-0.3f, 0.0f, -2.3f));
-	windows.push_back(glm::vec3(0.5f, 0.0f, -0.6f));
+	unsigned int planeTexture = loadTexture("resources/textures/depth-testing/metal.png");
 
 	shader.use();
 	shader.setInt("Texture", 0);
-	blendingShader.use();
-	blendingShader.setInt("Texture", 0);
 
+	screenShader.use();
+	screenShader.setInt("screenTexture", 0);
+	
+	// draw as wireframe
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
-
-		// Close GLFW when pressing Escape key
 		processInput(window);
 
-		// Clear color of the previous frame on the buffer
+		// Use our defined Framebuffer to draw screen
+		fbo.bind();
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // state-using function
+		glEnable(GL_DEPTH_TEST);
+		// Draw our first screen
 		shader.use();
-		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		// cubes
-		glBindVertexArray(cubeVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, cubeTexture);
+		cubeVAO.bind();
+		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, cubeTexture);
 		// First cube
+		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 		shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
@@ -254,33 +224,25 @@ int main() {
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		
+		cubeVAO.unbind();
+
 		// plane
-		glBindVertexArray(planeVAO);
-		glBindTexture(GL_TEXTURE_2D, floorTexture);
+		planeVAO.bind();
+		planeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, planeTexture);
 		shader.setMat4("model", glm::mat4(1.0f));
 		glDrawArrays(GL_TRIANGLES, 0, 6);
-		glBindVertexArray(0);
+		planeVAO.unbind();
 
-		// sort windows by distance
-		std::map<float, glm::vec3> sortedPositions;
-		for (unsigned int i = 0; i < windows.size(); i++) {
-			float distance = glm::length(camera.Position - windows[i]);
-			sortedPositions[distance] = windows[i]; // map sorts elements by key
-		}
-		// draw windows
-		blendingShader.use();
-		glBindVertexArray(blendingObjVAO);
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, windowTexture);
-		blendingShader.setMat4("view", view);
-		blendingShader.setMat4("projection", projection);
-		for (std::map<float, glm::vec3>::reverse_iterator pos = sortedPositions.rbegin(); pos != sortedPositions.rend(); ++pos) {
-			model = glm::mat4(1.0f);
-			model = glm::translate(model, pos->second);
-			blendingShader.setMat4("model", model);
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-		}
+		// Draw second screen using default framebuffer
+		fbo.unbind();
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // state-setting function
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // state-using function
+		glDisable(GL_DEPTH_TEST);
+		screenShader.use();
+		quadVAO.bind();
+		quadVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, texColorBuffer.textureID);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		quadVAO.unbind();
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
@@ -288,6 +250,14 @@ int main() {
 
 		lastFrame = currentFrame;
 	}
+
+	// Clear Objects
+	cubeVAO.deleteObj();
+	planeVBO.deleteObj();
+	quadVAO.deleteObj();
+	cubeVBO.deleteObj();
+	planeVBO.deleteObj();
+	quadVBO.deleteObj();
 
 	glfwTerminate();
 	return 0;
