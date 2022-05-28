@@ -23,9 +23,9 @@ void main() {
 
 	// kernel matrix
 	float kernel[9] = float[] (
-		1,  1,  1,
-		1, -8,  1,
-		1,  1,  1
+		1.0 / 16,  2.0 / 16,  1.0 / 16,
+		2.0 / 16,  4.0 / 16,  2.0 / 16,
+		1.0 / 16,  2.0 / 16,  1.0 / 16
 	);
 	
 	vec3 sampleTex[9];
@@ -34,10 +34,10 @@ void main() {
 		sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offset[i]));
 	}
 	// Combine fragment color
-	vec3 edge = vec3(0.0);
+	vec3 blur = vec3(0.0);
 	for (int i = 0; i < 9; i++) {
-		edge += sampleTex[i] * kernel[i];
+		blur += sampleTex[i] * kernel[i];
 	}
 
-	FragColor = vec4(edge, 1.0);
+	FragColor = vec4(blur, 1.0);
 }
