@@ -192,7 +192,7 @@ int main() {
 	screenShader.setInt("screenTexture", 0);
 	
 	// draw as wireframe
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -201,8 +201,6 @@ int main() {
 		processInput(window);
 
 		// Use our defined Framebuffer to draw screen
-		camera.Yaw += 180.0f; // rotate camera
-		camera.ProcessMouseMovement(0, 0, GL_FALSE);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
 		glm::mat4 model = glm::mat4(1.0f);
@@ -240,33 +238,6 @@ int main() {
 		fbo.unbind();
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // state-using function
-		// reset camera
-		camera.Yaw -= 180.0f;
-		camera.ProcessMouseMovement(0, 0, GL_TRUE);
-		view = camera.GetViewMatrix();
-		shader.use();
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-		// cubes
-		cubeVAO.bind();
-		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, cubeTexture);
-		// First cube
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-		shader.setMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		// Second cube
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-		shader.setMat4("model", model);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		cubeVAO.unbind();
-		// plane
-		planeVAO.bind();
-		planeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, planeTexture);
-		shader.setMat4("model", glm::mat4(1.0f));
-		glDrawArrays(GL_TRIANGLES, 0, 6);
-		planeVAO.unbind();
 		// Draw quad
 		glDisable(GL_DEPTH_TEST);
 		screenShader.use();
