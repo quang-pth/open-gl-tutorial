@@ -116,7 +116,7 @@ public:
     }
 
     // processes input received from a mouse input system. Expects the offset value in both the x and y direction.
-    void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = true)
+    void ProcessMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch = GL_TRUE)
     {
         xoffset *= MouseSensitivity;
         yoffset *= MouseSensitivity;
@@ -125,7 +125,7 @@ public:
         Pitch += yoffset;
 
         // make sure that when pitch is out of bounds, screen doesn't get flipped
-        if (constrainPitch)
+        if (constrainPitch == GL_TRUE)
         {
             if (Pitch > 89.0f)
                 Pitch = 89.0f;

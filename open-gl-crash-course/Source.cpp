@@ -170,7 +170,7 @@ int main() {
 	quadVAO.linkAttrib(quadVBO, 1, 2, GL_FLOAT, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 	quadVAO.unbind();
 
-	//// Gen framebuffer
+	// Gen framebuffer
 	FBO fbo;
 	TextureBuffer texColorBuffer(SCR_WIDTH, SCR_HEIGHT);
 	RBO rbo(SCR_WIDTH, SCR_HEIGHT);
@@ -192,8 +192,8 @@ int main() {
 	screenShader.setInt("screenTexture", 0);
 	
 	// draw as wireframe
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -201,31 +201,34 @@ int main() {
 		processInput(window);
 
 		// Use our defined Framebuffer to draw screen
+		camera.Yaw += 180.0f; // rotate camera
+		camera.ProcessMouseMovement(0, 0, GL_FALSE);
+		glm::mat4 view = camera.GetViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
+		glm::mat4 model = glm::mat4(1.0f);
+
 		fbo.bind();
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // state-using function
 		glEnable(GL_DEPTH_TEST);
 		// Draw our first screen
 		shader.use();
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
 		shader.setMat4("view", view);
 		shader.setMat4("projection", projection);
 		// cubes
 		cubeVAO.bind();
 		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, cubeTexture);
 		// First cube
-		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
 		shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
-		// Secone cube
+		// Second cube
 		model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
 		shader.setMat4("model", model);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		cubeVAO.unbind();
-
 		// plane
 		planeVAO.bind();
 		planeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, planeTexture);
@@ -233,10 +236,38 @@ int main() {
 		glDrawArrays(GL_TRIANGLES, 0, 6);
 		planeVAO.unbind();
 
-		// Draw second screen using default framebuffer
+		// Draw second screen with default frame buffer
 		fbo.unbind();
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // state-using function
+		// reset camera
+		camera.Yaw -= 180.0f;
+		camera.ProcessMouseMovement(0, 0, GL_TRUE);
+		view = camera.GetViewMatrix();
+		shader.use();
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		// cubes
+		cubeVAO.bind();
+		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, cubeTexture);
+		// First cube
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		// Second cube
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+		shader.setMat4("model", model);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+		cubeVAO.unbind();
+		// plane
+		planeVAO.bind();
+		planeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, planeTexture);
+		shader.setMat4("model", glm::mat4(1.0f));
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		planeVAO.unbind();
+		// Draw quad
 		glDisable(GL_DEPTH_TEST);
 		screenShader.use();
 		quadVAO.bind();
