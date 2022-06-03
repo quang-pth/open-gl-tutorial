@@ -204,6 +204,8 @@ int main() {
 	unsigned int cubeTexture = loadTexture("Textures/container.jpg");
 	// Cubemap texture
 	unsigned int skyboxTexture = loadCubeMap(cubemapFaces);
+	// Package model
+	//Model ourModel("resources/objects/backpack/backpack.obj");
 
 	cubemapShader.use();
 	cubemapShader.setInt("skyboxTexture", 0);
@@ -236,6 +238,7 @@ int main() {
 		cubemapShader.setMat4("projection", projection);
 		// cube
 		cubeVAO.bind();
+		//ourModel.Draw(cubemapShader);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		cubeVAO.unbind();
 		

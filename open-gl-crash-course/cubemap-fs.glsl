@@ -10,7 +10,9 @@ uniform samplerCube skyboxTexture;
 void main()
 {
 	vec3 viewDir = normalize(Position - cameraPos);
-	vec3 reflectDir = reflect(viewDir, normalize(Normal));
+	// ratio: air refraction idx / glass refraction idx
+    float ratio = 1.0 / 1.52;
+	vec3 reflectDir = refract(viewDir, normalize(Normal), ratio);
 
 	FragColor = vec4(texture(skyboxTexture, reflectDir).rgb, 1.0);
 }
