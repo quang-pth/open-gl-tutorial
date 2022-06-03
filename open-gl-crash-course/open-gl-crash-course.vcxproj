@@ -159,6 +159,8 @@
   <ItemGroup>
     <None Include="blending-fragment.glsl" />
     <None Include="blending-vertex.glsl" />
+    <None Include="cubemap-fs.glsl" />
+    <None Include="cubemap-vs.glsl" />
     <None Include="depth-test-fragment.glsl" />
     <None Include="depth-test-vertex.glsl" />
     <None Include="FragmentShader.glsl" />
@@ -170,6 +172,8 @@
     <None Include="model_loading_vertex.glsl" />
     <None Include="screen-framebuffer-fs.glsl" />
     <None Include="screen-framebuffer-vs.glsl" />
+    <None Include="skybox-fs.glsl" />
+    <None Include="skybox-vs.glsl" />
     <None Include="VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>

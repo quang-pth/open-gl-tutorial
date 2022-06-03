@@ -76,61 +76,61 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="blending-fragment.glsl">
-      <Filter>Blending</Filter>
+      <Filter>Part IV\Blending</Filter>
     </None>
     <None Include="blending-vertex.glsl">
-      <Filter>Blending</Filter>
+      <Filter>Part IV\Blending</Filter>
     </None>
     <None Include="LightSourceFragmentShader.glsl">
-      <Filter>Lighting</Filter>
+      <Filter>Part II\Lighting</Filter>
     </None>
     <None Include="LightSourceVertexShader.glsl">
-      <Filter>Lighting</Filter>
+      <Filter>Part II\Lighting</Filter>
     </None>
     <None Include="model_loading_fragment.glsl">
-      <Filter>Model</Filter>
+      <Filter>Part III\Model</Filter>
     </None>
     <None Include="depth-test-vertex.glsl">
-      <Filter>Depth Testing</Filter>
+      <Filter>Part IV\Depth Testing</Filter>
     </None>
     <None Include="depth-test-fragment.glsl">
-      <Filter>Depth Testing</Filter>
+      <Filter>Part IV\Depth Testing</Filter>
     </None>
     <None Include="model_loading_vertex.glsl">
-      <Filter>Model</Filter>
+      <Filter>Part III\Model</Filter>
     </None>
     <None Include="FragmentShader.glsl">
-      <Filter>Lighting</Filter>
+      <Filter>Part II\Lighting</Filter>
     </None>
     <None Include="VertexShader.glsl">
-      <Filter>Lighting</Filter>
+      <Filter>Part II\Lighting</Filter>
     </None>
     <None Include="screen-framebuffer-fs.glsl">
-      <Filter>Framebuffer</Filter>
+      <Filter>Part IV\Framebuffer</Filter>
     </None>
     <None Include="screen-framebuffer-vs.glsl">
-      <Filter>Framebuffer</Filter>
+      <Filter>Part IV\Framebuffer</Filter>
     </None>
     <None Include="framebuffer-vs.glsl">
-      <Filter>Framebuffer</Filter>
+      <Filter>Part IV\Framebuffer</Filter>
     </None>
     <None Include="framebuffer-fs.glsl">
-      <Filter>Framebuffer</Filter>
+      <Filter>Part IV\Framebuffer</Filter>
+    </None>
+    <None Include="cubemap-vs.glsl">
+      <Filter>Part IV\Cubemap</Filter>
+    </None>
+    <None Include="cubemap-fs.glsl">
+      <Filter>Part IV\Cubemap</Filter>
+    </None>
+    <None Include="skybox-vs.glsl">
+      <Filter>Part IV\Cubemap</Filter>
+    </None>
+    <None Include="skybox-fs.glsl">
+      <Filter>Part IV\Cubemap</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Filter Include="Blending">
-      <UniqueIdentifier>{57277e93-0719-48a9-9dfb-f3a36f672e7f}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Lighting">
-      <UniqueIdentifier>{49b32087-4cec-405c-ba20-6476d4298358}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Model">
-      <UniqueIdentifier>{466476d4-d457-4b6b-b05e-60716e8866e6}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Depth Testing">
-      <UniqueIdentifier>{ad1e0164-ee6b-4607-a918-29ca27660221}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{c2eca65b-75a1-4409-b7b9-c33a1eabae40}</UniqueIdentifier>
     </Filter>
@@ -140,8 +140,32 @@
     <Filter Include="Others">
       <UniqueIdentifier>{8ea607e2-2560-4550-906f-719196d8c0ea}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Framebuffer">
+    <Filter Include="Part IV">
+      <UniqueIdentifier>{7a459c81-0c9b-4980-b15d-6d484e01b6c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Depth Testing">
+      <UniqueIdentifier>{ad1e0164-ee6b-4607-a918-29ca27660221}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Blending">
+      <UniqueIdentifier>{57277e93-0719-48a9-9dfb-f3a36f672e7f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Framebuffer">
       <UniqueIdentifier>{18d942e4-7fda-47bd-9394-c69ffcab24bc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part II">
+      <UniqueIdentifier>{edc74010-e8cc-417f-8f8b-066e9402280b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part II\Lighting">
+      <UniqueIdentifier>{49b32087-4cec-405c-ba20-6476d4298358}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part III">
+      <UniqueIdentifier>{daed684a-d8ad-4d55-ac30-1e1ac9151630}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part III\Model">
+      <UniqueIdentifier>{466476d4-d457-4b6b-b05e-60716e8866e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Cubemap">
+      <UniqueIdentifier>{20e1268d-2b60-4d64-90fa-65e5f21d6ee1}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

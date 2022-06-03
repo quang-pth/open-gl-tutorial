@@ -3,7 +3,7 @@
 using namespace std;
 
 // Constructor that generates a Vertex Buffer Object and links it to vertices
-VBO::VBO(float vertices[], float size)
+VBO::VBO(const float vertices[], float size)
 {
 	glGenBuffers(1, &vboID);
 	glBindBuffer(GL_ARRAY_BUFFER, vboID);
