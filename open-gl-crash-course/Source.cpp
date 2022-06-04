@@ -181,7 +181,7 @@ int main() {
 
 	// Config OpenGL global state
 	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_PROGRAM_POINT_SIZE);
+	//glEnable(GL_PROGRAM_POINT_SIZE);
 
 	Shader shader("advanced-vs.glsl", "advanced-fs.glsl");
 
@@ -213,7 +213,7 @@ int main() {
 		glm::mat4 model = glm::mat4(1.0f);
 		glm::mat4 view = camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
-
+		
 		// Draw our first screen
 		shader.use();
 		shader.setMat4("model", model);
@@ -222,7 +222,7 @@ int main() {
 		// cube
 		cubeVAO.bind();
 		//ourModel.Draw(cubemapShader);
-		cubeVAO.drawArrays(GL_POINTS, 0, 36);
+		cubeVAO.drawArrays(GL_TRIANGLES, 0, 36);
 		cubeVAO.unbind();
 
 		glfwSwapBuffers(window);

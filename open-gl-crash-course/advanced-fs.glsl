@@ -1,9 +1,13 @@
 #version 330 core 
 
-in vec2 TexCoords;
-
 out vec4 FragColor;
 
 void main() {
-	FragColor = vec4(0.1, 0.5, 0.3, 1.0);
+	// Fragment coords in screen-space
+	if (gl_FragCoord.x < 400) {
+		FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+	}
+	else {
+		FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+	}
 }
