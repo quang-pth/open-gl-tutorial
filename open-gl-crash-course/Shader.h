@@ -9,7 +9,6 @@
 #include<sstream>
 #include<iostream>
 
-#pragma once
 class Shader
 {
 public:

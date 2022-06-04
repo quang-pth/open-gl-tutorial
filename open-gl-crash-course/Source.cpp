@@ -13,35 +13,9 @@
 #include"vbo.h"
 #include"fbo.h"
 #include"texture_buffer.h"
+#include"utils.h"
 
 #include <iostream>
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void mouse_callback(GLFWwindow* window, double xpos, double ypos);
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
-unsigned int loadTexture(const std::string& path, const GLenum& wrappingFormat = GL_LINEAR);
-unsigned int loadCubeMap(const vector<std::string>& faces);
-void setPointLight(const Shader &shader, const int& index, const glm::vec3& position, const glm::vec3& color);
-
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
-
-// Cursor init position
-float lastX = SCR_WIDTH / 2;
-float lastY = SCR_HEIGHT / 2;
-
-// Camera setup
-glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
-Camera camera(cameraPosition);
-
-bool firstMouse = true;
-
-float deltaTime = 0.0f; // time between current frame and last frame
-float lastFrame = 0.0f; // time of the last frame
-
-// Light Source Position
-glm::vec3 lightPos(1.2f, 5.0f, 5.0f);
 
 float cubeVertices[] = {
 	// back face
@@ -88,61 +62,6 @@ float cubeVertices[] = {
 	 0.5f, 0.5f,  0.5f, 1.0f, 0.0f, // bottom-right
 };
 
-float skyboxVertices[] = {
-	// positions          
-	-1.0f,  1.0f, -1.0f,
-	-1.0f, -1.0f, -1.0f,
-	 1.0f, -1.0f, -1.0f,
-	 1.0f, -1.0f, -1.0f,
-	 1.0f,  1.0f, -1.0f,
-	-1.0f,  1.0f, -1.0f,
-
-	-1.0f, -1.0f,  1.0f,
-	-1.0f, -1.0f, -1.0f,
-	-1.0f,  1.0f, -1.0f,
-	-1.0f,  1.0f, -1.0f,
-	-1.0f,  1.0f,  1.0f,
-	-1.0f, -1.0f,  1.0f,
-
-	 1.0f, -1.0f, -1.0f,
-	 1.0f, -1.0f,  1.0f,
-	 1.0f,  1.0f,  1.0f,
-	 1.0f,  1.0f,  1.0f,
-	 1.0f,  1.0f, -1.0f,
-	 1.0f, -1.0f, -1.0f,
-
-	-1.0f, -1.0f,  1.0f,
-	-1.0f,  1.0f,  1.0f,
-	 1.0f,  1.0f,  1.0f,
-	 1.0f,  1.0f,  1.0f,
-	 1.0f, -1.0f,  1.0f,
-	-1.0f, -1.0f,  1.0f,
-
-	-1.0f,  1.0f, -1.0f,
-	 1.0f,  1.0f, -1.0f,
-	 1.0f,  1.0f,  1.0f,
-	 1.0f,  1.0f,  1.0f,
-	-1.0f,  1.0f,  1.0f,
-	-1.0f,  1.0f, -1.0f,
-
-	-1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f,  1.0f,
-	 1.0f, -1.0f, -1.0f,
-	 1.0f, -1.0f, -1.0f,
-	-1.0f, -1.0f,  1.0f,
-	 1.0f, -1.0f,  1.0f
-};
-
-// Cube map faces path
-vector<std::string> cubemapFaces {
-	"resources/skybox/right.jpg",
-	"resources/skybox/left.jpg",
-	"resources/skybox/top.jpg",
-	"resources/skybox/bottom.jpg",
-	"resources/skybox/front.jpg",
-	"resources/skybox/back.jpg",
-};
-
 int main() {
 	glfwInit();
 	/*
@@ -155,7 +74,7 @@ int main() {
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 	// Create GLFW window object
-	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+	GLFWwindow* window = glfwCreateWindow(Settings::SCR_WIDTH, Settings::SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL) {
 		std::cout << "Failed to create GLFW window" << std::endl;
 		glfwTerminate();
@@ -164,11 +83,11 @@ int main() {
 	// Create the window context
 	glfwMakeContextCurrent(window);
 	// Adjust the Viewport as the window is resized by registering the window to the callback
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetFramebufferSizeCallback(window, Utils::framebuffer_size_callback);
 	// Get the mouse position offset by registering a mouse callback
-	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetCursorPosCallback(window, Utils::mouse_callback);
 	// Register the mouse scroll callback
-	glfwSetScrollCallback(window, scroll_callback);
+	glfwSetScrollCallback(window, Utils::scroll_callback);
 
 	// Hide the cursor and capture it
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -183,210 +102,117 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	//glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader shader("advanced-vs.glsl", "advanced-fs.glsl");
+	Shader redShader("common-vs.glsl", "red-fs.glsl");
+	Shader greenShader("common-vs.glsl", "green-fs.glsl");
+	Shader blueShader("common-vs.glsl", "blue-fs.glsl");
+	Shader yellowShader("common-vs.glsl", "yellow-fs.glsl");
 
-	// Cube
-	VAO cubeVAO;
-	VBO cubeVBO(cubeVertices, sizeof(cubeVertices));
-	cubeVAO.bind();
-	cubeVAO.linkAttrib(cubeVBO, 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	cubeVAO.linkAttrib(cubeVBO, 1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-	cubeVAO.unbind();
+	// Red
+	VAO redVAO;
+	VBO redVBO(cubeVertices, sizeof(cubeVertices));
+	redVAO.bind();
+	redVAO.linkAttrib(redVBO, 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	redVAO.unbind();
+	// Green
+	VAO greenVAO;
+	VBO greenVBO(cubeVertices, sizeof(cubeVertices));
+	greenVAO.bind();
+	greenVAO.linkAttrib(greenVBO, 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	greenVAO.unbind();
+	// Blue
+	VAO blueVAO;
+	VBO blueVBO(cubeVertices, sizeof(cubeVertices));
+	blueVAO.bind();
+	blueVAO.linkAttrib(blueVBO, 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	blueVAO.unbind();
+	// Yellow
+	VAO yellowVAO;
+	VBO yellowVBO(cubeVertices, sizeof(cubeVertices));
+	yellowVAO.bind();
+	yellowVAO.linkAttrib(yellowVBO, 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	yellowVAO.unbind();
 
-	// Cube texture (.jpg)
-	unsigned int frontTexture = loadTexture((std::string)"resources/textures/container.jpg");
-	unsigned int backTexture = loadTexture((std::string)"resources/textures/awesomeface.png");
-	// Package model
-	//Model ourModel("resources/objects/backpack/backpack.obj");
-
+	// Get the uniform blocks
+	unsigned int red = glGetUniformBlockIndex(redShader.ID, "Matrices");
+	unsigned int green = glGetUniformBlockIndex(greenShader.ID, "Matrices");
+	unsigned int blue = glGetUniformBlockIndex(blueShader.ID, "Matrices");
+	unsigned int yellow = glGetUniformBlockIndex(yellowShader.ID, "Matrices");
+	// Bind uniform blocks to the binding point 0
+	glUniformBlockBinding(redShader.ID, red, 0 /*binding point idx*/);
+	glUniformBlockBinding(greenShader.ID, green, 0);
+	glUniformBlockBinding(blueShader.ID, blue, 0);
+	glUniformBlockBinding(yellowShader.ID, yellow, 0);
+	// Gen uniform buffer object
+	unsigned int uboMatrices;
+	glGenBuffers(1, &uboMatrices);
+	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	// Bind uniform buffer object to the binding point 0
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0 /*binding point idx*/, uboMatrices, 
+		0 /*offset*/, 2 * sizeof(glm::mat4) /*size of data*/);
+	
 	// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	shader.use();
-	shader.setInt("frontTexture", 0);
-	shader.setInt("backTexture", 1);
 
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		processInput(window);
+		Settings::deltaTime = currentFrame - Settings::lastFrame;
+		Utils::processInput(window);
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use our defined Framebuffer to draw screen
 		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
+		glm::mat4 view = Settings::camera.GetViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(Settings::camera.Zoom /*field of view*/), 
+			(float)Settings::SCR_WIDTH / (float)Settings::SCR_HEIGHT /*scene ration*/, 
+			0.1f /*near plane*/, 100.0f /*far plane*/);
 		
-		// Draw our first screen
-		shader.use();
-		shader.setMat4("model", model);
-		shader.setMat4("view", view);
-		shader.setMat4("projection", projection);
-		// cube
-		cubeVAO.bind();
-		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, frontTexture);
-		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE1, backTexture);
-		cubeVAO.drawArrays(GL_TRIANGLES, 0, 36);
-		cubeVAO.unbind();
+		// Set values for the uniform buffer object
+		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
+		glBufferSubData(GL_UNIFORM_BUFFER, 0 /*offset of the attr in the uniform block*/,
+			sizeof(glm::mat4), glm::value_ptr(projection));
+		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) /*view matrix offset*/,
+			sizeof(glm::mat4), glm::value_ptr(view));
+		glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+		// Red cube
+		redShader.use();
+		model = glm::translate(model, glm::vec3(-0.75f, 0.75f, 0.0f));
+		redShader.setMat4("model", model);
+		redVAO.drawArrays(GL_TRIANGLES, 0, 36);
+		// Green cube
+		greenShader.use();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.75f, 0.75f, 0.0f));
+		greenShader.setMat4("model", model);
+		greenVAO.drawArrays(GL_TRIANGLES, 0, 36);
+		// Blue cube
+		blueShader.use();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.75f, -0.75f, 0.0f));
+		blueShader.setMat4("model", model);
+		blueVAO.drawArrays(GL_TRIANGLES, 0, 36);
+		// Yellow cube
+		yellowShader.use();
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-0.75f, -0.75f, 0.0f));
+		yellowShader.setMat4("model", model);
+		yellowVAO.drawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
 
-		lastFrame = currentFrame;
+		Settings::lastFrame = currentFrame;
 	}
 
 	// Clear Objects
-	cubeVAO.deleteObj();
-	cubeVBO.deleteObj();
+	redVAO.deleteObj();
+	redVBO.deleteObj();
 
 	glfwTerminate();
 	return 0;
-}
-
-void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
-	glViewport(0, 0, width, height);
-}
-
-void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
-	float xpos = static_cast<float>(xposIn);
-	float ypos = static_cast<float>(yposIn);
-
-	if (firstMouse) {
-		lastX = xpos;
-		lastY = ypos;
-		firstMouse = false;
-	}
-
-	float xoffset = xpos - lastX;
-	float yoffset = lastY - ypos;
-	lastX = xpos;
-	lastY = ypos;
-
-	camera.ProcessMouseMovement(xoffset, yoffset);
-}
-void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
-{
-	camera.ProcessMouseScroll(static_cast<float>(yoffset));
-}
-
-void processInput(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
-		glfwSetWindowShouldClose(window, true);
-	}
-	/*
-	=============================================
-		START Control Camera
-	=============================================
-	*/
-	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
-		camera.ProcessKeyboard(FORWARD, deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
-		camera.ProcessKeyboard(BACKWARD, deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		camera.ProcessKeyboard(LEFT, deltaTime);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		camera.ProcessKeyboard(RIGHT, deltaTime);
-	}
-	/*
-	=============================================
-		END Control Camera
-	=============================================
-	*/
-}
-
-void setPointLight(const Shader& shader, const int& index, const glm::vec3& position, const glm::vec3& color) {
-	string prefix = "pointLight[" + to_string(index) + "]";
-	// Set light point attributes
-	shader.setVec3(prefix + ".position", position);
-	shader.setVec3(prefix + ".ambient", color * 0.1f);
-	shader.setVec3(prefix + ".diffuse", color * 1.3232f);
-	shader.setVec3(prefix + ".specular", color * 0.08f);
-	shader.setFloat(prefix + ".constant", 1.0f);
-	shader.setFloat(prefix + ".linear", 0.07f);
-	shader.setFloat(prefix + ".quadratic", 0.017f);
-}
-
-unsigned int loadTexture(const std::string& path, const GLenum& wrappingFormat) {
-	// Create Texture object
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	// Load and generate the Texture
-	int width, height, nrChannels;
-	stbi_set_flip_vertically_on_load(true); // flip loaded texture's on the y-axis.
-	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0); // get image width, height and color channels
-
-	if (data) {
-		// Set texture color channels
-		GLenum colorChannel = GL_RGB;
-		if (nrChannels == 1)
-			colorChannel = GL_RED;
-		else if (nrChannels == 3)
-			colorChannel = GL_RGB;
-		else if (nrChannels == 4)
-			colorChannel = GL_RGBA;
-
-		glBindTexture(GL_TEXTURE_2D, textureID);
-		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
-			colorChannel /*format to store the image*/, width, height, 0,
-			colorChannel /*format of the source image*/, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-
-		// Set the texture wrapping parameters
-		// S, T, R (3D texture) => x, y, z axis
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrappingFormat); // set mirror mode on texture x axis
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrappingFormat); // set mirror mode on texture y axis
-		// Set Texture Filtering parameters
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
-	}
-	else {
-		std::cout << "====================TEXTURE==================" << std::endl;
-		std::cout << "Width: " << width << std::endl;
-		std::cout << "Height: " << height << std::endl;
-		std::cout << "nrChannels: " << nrChannels << std::endl;
-		std::cout << "Failed to load texture: " << stbi_failure_reason() << std::endl;
-		std::cout << "====================TEXTURE==================" << std::endl;
-	}
-	// Free the image memory
-	stbi_image_free(data);
-	// Reset
-	stbi_set_flip_vertically_on_load(false);
-
-	return textureID;
-}
-
-unsigned int loadCubeMap(const vector<std::string>& faces) {
-	unsigned int textureID;
-	glGenTextures(1, &textureID);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-
-	int width, height, nrChannels;
-	for (unsigned int i = 0; i < faces.size(); i++) {
-		unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
-		if (data != NULL) {
-			stbi_set_flip_vertically_on_load(false); // cubemap origin is top-left corner => not flip
-			// Gen texture for each face of the cube (6 faces)
-			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, 
-				GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-		}
-		else {
-			std::cout << "Cubemap failed to load at path: " << faces[i].c_str() << std::endl;
-		}
-		
-		stbi_image_free(data);
-	}
-	// set texture parameters
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	return textureID;
 }

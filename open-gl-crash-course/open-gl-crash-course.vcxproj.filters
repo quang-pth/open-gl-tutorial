@@ -5,73 +5,85 @@
     <ClCompile Include="glad.c">
       <Filter>Utils</Filter>
     </ClCompile>
-    <ClCompile Include="camera.cpp">
-      <Filter>Others</Filter>
-    </ClCompile>
-    <ClCompile Include="mesh.cpp">
-      <Filter>Others</Filter>
-    </ClCompile>
-    <ClCompile Include="model.cpp">
-      <Filter>Others</Filter>
-    </ClCompile>
-    <ClCompile Include="Shader.cpp">
-      <Filter>Others</Filter>
-    </ClCompile>
     <ClCompile Include="stb_image.cpp">
       <Filter>Others</Filter>
     </ClCompile>
+    <ClCompile Include="fbo.cpp">
+      <Filter>Others\Buffer</Filter>
+    </ClCompile>
     <ClCompile Include="ebo.cpp">
-      <Filter>Others</Filter>
+      <Filter>Others\Buffer</Filter>
     </ClCompile>
     <ClCompile Include="vao.cpp">
-      <Filter>Others</Filter>
+      <Filter>Others\Buffer</Filter>
     </ClCompile>
     <ClCompile Include="vbo.cpp">
-      <Filter>Others</Filter>
-    </ClCompile>
-    <ClCompile Include="fbo.cpp">
-      <Filter>Others</Filter>
+      <Filter>Others\Buffer</Filter>
     </ClCompile>
     <ClCompile Include="rbo.cpp">
-      <Filter>Others</Filter>
+      <Filter>Others\Buffer</Filter>
     </ClCompile>
     <ClCompile Include="texture_buffer.cpp">
-      <Filter>Others</Filter>
+      <Filter>Others\Buffer</Filter>
+    </ClCompile>
+    <ClCompile Include="model.cpp">
+      <Filter>Others\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="mesh.cpp">
+      <Filter>Others\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="camera.cpp">
+      <Filter>Others\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Shader.cpp">
+      <Filter>Others\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
+      <Filter>Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="settings.cpp">
+      <Filter>Others\Setting</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="camera.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="mesh.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="model.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Shader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stb_image.h">
       <Filter>Utils</Filter>
     </ClInclude>
-    <ClInclude Include="vbo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="vao.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="ebo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="rbo.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Buffer</Filter>
     </ClInclude>
     <ClInclude Include="fbo.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="rbo.h">
+      <Filter>Header Files\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="vbo.h">
+      <Filter>Header Files\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="vao.h">
+      <Filter>Header Files\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="model.h">
+      <Filter>Header Files\Model</Filter>
+    </ClInclude>
+    <ClInclude Include="mesh.h">
+      <Filter>Header Files\Model</Filter>
     </ClInclude>
     <ClInclude Include="texture_buffer.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Buffer</Filter>
+    </ClInclude>
+    <ClInclude Include="Shader.h">
+      <Filter>Header Files\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="camera.h">
+      <Filter>Header Files\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="settings.h">
+      <Filter>Header Files\Setting</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
+      <Filter>Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -129,10 +141,19 @@
     <None Include="skybox-fs.glsl">
       <Filter>Part IV\Cubemap</Filter>
     </None>
-    <None Include="advanced-vs.glsl">
+    <None Include="common-vs.glsl">
       <Filter>Part IV\Advanced GLSL</Filter>
     </None>
-    <None Include="advanced-fs.glsl">
+    <None Include="red-fs.glsl">
+      <Filter>Part IV\Advanced GLSL</Filter>
+    </None>
+    <None Include="blue-fs.glsl">
+      <Filter>Part IV\Advanced GLSL</Filter>
+    </None>
+    <None Include="green-fs.glsl">
+      <Filter>Part IV\Advanced GLSL</Filter>
+    </None>
+    <None Include="yellow-fs.glsl">
       <Filter>Part IV\Advanced GLSL</Filter>
     </None>
   </ItemGroup>
@@ -175,6 +196,36 @@
     </Filter>
     <Filter Include="Part IV\Advanced GLSL">
       <UniqueIdentifier>{49b50c85-62a1-403f-8e9f-0ea113cbbddf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Buffer">
+      <UniqueIdentifier>{7b3006a0-f95f-43ee-9b6e-3ec5f559b97f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Model">
+      <UniqueIdentifier>{f135dc55-670a-4ec2-87a1-caf04627d95b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Shader">
+      <UniqueIdentifier>{4d09d8a9-4b92-41b7-9d4f-f07a7948e9c8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Camera">
+      <UniqueIdentifier>{2d951618-adfa-4e31-bf38-158cf59f60b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Others\Buffer">
+      <UniqueIdentifier>{127bf076-f387-431d-bdd9-8957454a5341}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Others\Camera">
+      <UniqueIdentifier>{5b9eaef3-42b9-454b-ab41-8a861c10c63c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Others\Model">
+      <UniqueIdentifier>{9c463b47-969a-44ec-baf7-b9df1bb699b3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Others\Shader">
+      <UniqueIdentifier>{298168e4-b698-4e69-8e6d-76f25aa893a2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Setting">
+      <UniqueIdentifier>{612e63e1-057b-4197-97a6-6714107e2436}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Others\Setting">
+      <UniqueIdentifier>{4031a2ad-4b57-42dd-951b-c3f11adc7474}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
