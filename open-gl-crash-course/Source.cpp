@@ -44,48 +44,48 @@ float lastFrame = 0.0f; // time of the last frame
 glm::vec3 lightPos(1.2f, 5.0f, 5.0f);
 
 float cubeVertices[] = {
-	// positions          // normals
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
-
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,
-
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,
-
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,
-
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,
-	-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
-
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-	-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+	// back face
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
+	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, // bottom-right
+	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	-0.5f, -0.5f, -0.5f, 0.0f, 0.0f, // bottom-left
+	-0.5f,  0.5f, -0.5f, 0.0f, 1.0f, // top-left
+	// front face
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+	 0.5f, -0.5f, 0.5f, 1.0f, 0.0f, // bottom-right
+	 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, // top-right
+	 0.5f,  0.5f, 0.5f, 1.0f, 1.0f, // top-right
+	-0.5f,  0.5f, 0.5f, 0.0f, 1.0f, // top-left
+	-0.5f, -0.5f, 0.5f, 0.0f, 0.0f, // bottom-left
+	// left face
+	-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-right
+	-0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-left
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-left
+	-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-right
+	-0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-right
+	// right face
+	 0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-left
+	 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
+	 0.5f,  0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	 0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // bottom-right
+	 0.5f,  0.5f,  0.5f, 1.0f, 0.0f, // top-left
+	 0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-left
+	// bottom face
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+	 0.5f, -0.5f, -0.5f, 1.0f, 1.0f, // top-left
+	 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // bottom-left
+	 0.5f, -0.5f,  0.5f, 1.0f, 0.0f, // bottom-left
+	-0.5f, -0.5f,  0.5f, 0.0f, 0.0f, // bottom-right
+	-0.5f, -0.5f, -0.5f, 0.0f, 1.0f, // top-right
+	// top face
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+	-0.5f, 0.5f,  0.5f, 0.0f, 0.0f, // bottom-left
+	 0.5f, 0.5f,  0.5f, 1.0f, 0.0f, // bottom-right
+	 0.5f, 0.5f, -0.5f, 1.0f, 1.0f, // top-right
+	-0.5f, 0.5f, -0.5f, 0.0f, 1.0f, // top-left
+	 0.5f, 0.5f,  0.5f, 1.0f, 0.0f, // bottom-right
 };
 
 float skyboxVertices[] = {
@@ -189,17 +189,22 @@ int main() {
 	VAO cubeVAO;
 	VBO cubeVBO(cubeVertices, sizeof(cubeVertices));
 	cubeVAO.bind();
-	cubeVAO.linkAttrib(cubeVBO, 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	cubeVAO.linkAttrib(cubeVBO, 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	cubeVAO.linkAttrib(cubeVBO, 0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	cubeVAO.linkAttrib(cubeVBO, 1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
 	cubeVAO.unbind();
 
 	// Cube texture (.jpg)
-	unsigned int cubeTexture = loadTexture((std::string)"Textures/container.jpg");
+	unsigned int frontTexture = loadTexture((std::string)"resources/textures/container.jpg");
+	unsigned int backTexture = loadTexture((std::string)"resources/textures/awesomeface.png");
 	// Package model
 	//Model ourModel("resources/objects/backpack/backpack.obj");
 
 	// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	shader.use();
+	shader.setInt("frontTexture", 0);
+	shader.setInt("backTexture", 1);
 
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
@@ -221,7 +226,8 @@ int main() {
 		shader.setMat4("projection", projection);
 		// cube
 		cubeVAO.bind();
-		//ourModel.Draw(cubemapShader);
+		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE0, frontTexture);
+		cubeVAO.linkTexture(GL_TEXTURE_2D, GL_TEXTURE1, backTexture);
 		cubeVAO.drawArrays(GL_TRIANGLES, 0, 36);
 		cubeVAO.unbind();
 

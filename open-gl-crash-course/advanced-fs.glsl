@@ -1,13 +1,18 @@
 #version 330 core 
 
+in vec2 TexCoords;
+
 out vec4 FragColor;
 
+uniform sampler2D frontTexture;
+uniform sampler2D backTexture;
+
 void main() {
-	// Fragment coords in screen-space
-	if (gl_FragCoord.x < 400) {
-		FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+	if (gl_FrontFacing) {
+		FragColor = texture(frontTexture, TexCoords);
 	}
 	else {
-		FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+		FragColor = texture(backTexture, TexCoords);
 	}
+//	FragColor = texture(frontTexture, TexCoords);
 }
