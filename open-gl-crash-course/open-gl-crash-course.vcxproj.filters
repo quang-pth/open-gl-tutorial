@@ -129,6 +129,12 @@
     <None Include="skybox-fs.glsl">
       <Filter>Part IV\Cubemap</Filter>
     </None>
+    <None Include="advanced-vs.glsl">
+      <Filter>Part IV\Advanced GLSL</Filter>
+    </None>
+    <None Include="advanced-fs.glsl">
+      <Filter>Part IV\Advanced GLSL</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -166,6 +172,9 @@
     </Filter>
     <Filter Include="Part IV\Cubemap">
       <UniqueIdentifier>{20e1268d-2b60-4d64-90fa-65e5f21d6ee1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Advanced GLSL">
+      <UniqueIdentifier>{49b50c85-62a1-403f-8e9f-0ea113cbbddf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -181,9 +181,9 @@ int main() {
 
 	// Config OpenGL global state
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_PROGRAM_POINT_SIZE);
 
-	Shader cubemapShader("cubemap-vs.glsl", "cubemap-fs.glsl");
-	Shader skyboxShader("skybox-vs.glsl", "skybox-fs.glsl");
+	Shader shader("advanced-vs.glsl", "advanced-fs.glsl");
 
 	// Cube
 	VAO cubeVAO;
@@ -193,26 +193,11 @@ int main() {
 	cubeVAO.linkAttrib(cubeVBO, 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	cubeVAO.unbind();
 
-	// Skybox
-	VAO skyboxVAO;
-	VBO skyboxVBO(skyboxVertices, sizeof(skyboxVertices));
-	skyboxVAO.bind();
-	skyboxVAO.linkAttrib(skyboxVBO, 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	skyboxVAO.unbind();
-
 	// Cube texture (.jpg)
 	unsigned int cubeTexture = loadTexture((std::string)"Textures/container.jpg");
-	// Cubemap texture
-	unsigned int skyboxTexture = loadCubeMap(cubemapFaces);
 	// Package model
 	//Model ourModel("resources/objects/backpack/backpack.obj");
 
-	cubemapShader.use();
-	cubemapShader.setInt("skyboxTexture", 0);
-
-	skyboxShader.use();
-	skyboxShader.setInt("skybox", 0);
-	
 	// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
@@ -230,28 +215,15 @@ int main() {
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom /*field of view*/), (float)SCR_WIDTH / (float)SCR_HEIGHT /*scene ration*/, 0.1f /*near plane*/, 100.0f /*far plane*/);
 
 		// Draw our first screen
-		glDepthFunc(GL_LESS);
-		cubemapShader.use();
-		cubemapShader.setVec3("cameraPos", camera.Position);
-		cubemapShader.setMat4("model", model);
-		cubemapShader.setMat4("view", view);
-		cubemapShader.setMat4("projection", projection);
+		shader.use();
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
 		// cube
 		cubeVAO.bind();
 		//ourModel.Draw(cubemapShader);
-		cubeVAO.drawArrays(GL_TRIANGLES, 0, 36);
+		cubeVAO.drawArrays(GL_POINTS, 0, 36);
 		cubeVAO.unbind();
-		
-		// Draw skybox
-		glDepthFunc(GL_LEQUAL);
-		skyboxShader.use();
-		// Remove the translation part of the view matrix => camera will stays at the center of the skybox
-		skyboxShader.setMat4("view", glm::mat4(glm::mat3(view)));
-		skyboxShader.setMat4("projection", projection);
-		skyboxVAO.bind();
-		skyboxVAO.linkTexture(GL_TEXTURE_CUBE_MAP, GL_TEXTURE0, skyboxTexture);
-		skyboxVAO.drawArrays(GL_TRIANGLES, 0, 36);
-		skyboxVAO.unbind();
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
@@ -263,8 +235,6 @@ int main() {
 	// Clear Objects
 	cubeVAO.deleteObj();
 	cubeVBO.deleteObj();
-	skyboxVAO.deleteObj();
-	skyboxVBO.deleteObj();
 
 	glfwTerminate();
 	return 0;

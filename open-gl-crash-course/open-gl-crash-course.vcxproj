@@ -157,6 +157,8 @@
     <ClCompile Include="vbo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="advanced-fs.glsl" />
+    <None Include="advanced-vs.glsl" />
     <None Include="blending-fragment.glsl" />
     <None Include="blending-vertex.glsl" />
     <None Include="cubemap-fs.glsl" />
