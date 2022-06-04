@@ -4,11 +4,11 @@ FBO::FBO() {
 	glGenFramebuffers(1, &fboID);
 }
 
-void FBO::linkRenderBuffer(RBO renderBuffer) {
+void FBO::linkRenderBuffer(const RBO& renderBuffer) {
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, renderBuffer.rboID);
 }
 
-void FBO::linkTexture(TextureBuffer texColorBuffer) {
+void FBO::linkTexture(const TextureBuffer& texColorBuffer) {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer.textureID, 0);
 }
 

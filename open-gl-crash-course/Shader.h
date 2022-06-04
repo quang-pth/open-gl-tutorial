@@ -74,15 +74,15 @@ public:
 	}
 
 	// utility uniform functions
-	void setBool(const std::string& name, bool value) const 
+	void setBool(const std::string& name, const bool& value) const 
 	{
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 	}
-	void setInt(const std::string& name, int value) const 
+	void setInt(const std::string& name, const int& value) const 
 	{
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 	}
-	void setFloat(const std::string& name, float value) const 
+	void setFloat(const std::string& name, const float& value) const 
 	{
 		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 	}
@@ -91,7 +91,7 @@ public:
 	{
 		glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 	}
-	void setVec2(const std::string& name, float x, float y) const
+	void setVec2(const std::string& name, const float& x, const float& y) const
 	{
 		glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
 	}
@@ -100,7 +100,7 @@ public:
 	{
 		glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 	}
-	void setVec3(const std::string& name, float x, float y, float z) const
+	void setVec3(const std::string& name, const float& x, const float& y, const float& z) const
 	{
 		glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 	}
@@ -109,7 +109,7 @@ public:
 	{
 		glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 	}
-	void setVec4(const std::string& name, float x, float y, float z, float w) const
+	void setVec4(const std::string& name, const float& x, const float& y, const float& z, const float& w) const
 	{
 		glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
 	}
@@ -129,7 +129,7 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1 /*Number of matrices*/, GL_FALSE, &mat[0][0]);
 	}
 
-	void checkComplieShader(GLuint shader, std::string shaderType) {
+	void checkComplieShader(const GLuint& shader, const std::string& shaderType) {
 		int success;
 		char infoLog[512];
 		if (shaderType != "PROGRAM") {

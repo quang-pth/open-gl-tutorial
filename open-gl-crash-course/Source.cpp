@@ -7,7 +7,7 @@
 
 #include"Shader.h"
 #include"camera.h"
-#include "model.h"
+#include"model.h"
 
 #include"vao.h"
 #include"vbo.h"
@@ -20,9 +20,9 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
-unsigned int loadTexture(const char* path, const char* name = NULL);
-unsigned int loadCubeMap(vector<std::string> faces);
-void setPointLight(Shader &shader, int index, glm::vec3 position, glm::vec3 color);
+unsigned int loadTexture(const std::string& path, const GLenum& wrappingFormat = GL_LINEAR);
+unsigned int loadCubeMap(const vector<std::string>& faces);
+void setPointLight(const Shader &shader, const int& index, const glm::vec3& position, const glm::vec3& color);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -189,19 +189,19 @@ int main() {
 	VAO cubeVAO;
 	VBO cubeVBO(cubeVertices, sizeof(cubeVertices));
 	cubeVAO.bind();
-	cubeVAO.linkAttrib(cubeVBO, 0, 3, GL_FLOAT, 6 * sizeof(float), (void*)0);
-	cubeVAO.linkAttrib(cubeVBO, 1, 3, GL_FLOAT, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+	cubeVAO.linkAttrib(cubeVBO, 0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	cubeVAO.linkAttrib(cubeVBO, 1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 	cubeVAO.unbind();
 
 	// Skybox
 	VAO skyboxVAO;
 	VBO skyboxVBO(skyboxVertices, sizeof(skyboxVertices));
 	skyboxVAO.bind();
-	skyboxVAO.linkAttrib(skyboxVBO, 0, 3, GL_FLOAT, 3 * sizeof(float), (void*)0);
+	skyboxVAO.linkAttrib(skyboxVBO, 0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 	skyboxVAO.unbind();
 
 	// Cube texture (.jpg)
-	unsigned int cubeTexture = loadTexture("Textures/container.jpg");
+	unsigned int cubeTexture = loadTexture((std::string)"Textures/container.jpg");
 	// Cubemap texture
 	unsigned int skyboxTexture = loadCubeMap(cubemapFaces);
 	// Package model
@@ -239,7 +239,7 @@ int main() {
 		// cube
 		cubeVAO.bind();
 		//ourModel.Draw(cubemapShader);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		cubeVAO.drawArrays(GL_TRIANGLES, 0, 36);
 		cubeVAO.unbind();
 		
 		// Draw skybox
@@ -250,7 +250,7 @@ int main() {
 		skyboxShader.setMat4("projection", projection);
 		skyboxVAO.bind();
 		skyboxVAO.linkTexture(GL_TEXTURE_CUBE_MAP, GL_TEXTURE0, skyboxTexture);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		skyboxVAO.drawArrays(GL_TRIANGLES, 0, 36);
 		skyboxVAO.unbind();
 
 		glfwSwapBuffers(window);
@@ -324,7 +324,7 @@ void processInput(GLFWwindow* window) {
 	*/
 }
 
-void setPointLight(Shader& shader, int index, glm::vec3 position, glm::vec3 color) {
+void setPointLight(const Shader& shader, const int& index, const glm::vec3& position, const glm::vec3& color) {
 	string prefix = "pointLight[" + to_string(index) + "]";
 	// Set light point attributes
 	shader.setVec3(prefix + ".position", position);
@@ -336,32 +336,29 @@ void setPointLight(Shader& shader, int index, glm::vec3 position, glm::vec3 colo
 	shader.setFloat(prefix + ".quadratic", 0.017f);
 }
 
-unsigned int loadTexture(const char* path, const char* name) {
+unsigned int loadTexture(const std::string& path, const GLenum& wrappingFormat) {
 	// Create Texture object
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 	// Load and generate the Texture
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true); // flip loaded texture's on the y-axis.
-	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0); // get image width, height and color channels
+	unsigned char* data = stbi_load(path.c_str(), &width, &height, &nrChannels, 0); // get image width, height and color channels
 
 	if (data) {
 		// Set texture color channels
-		GLenum format = GL_RGB;
+		GLenum colorChannel = GL_RGB;
 		if (nrChannels == 1)
-			format = GL_RED;
+			colorChannel = GL_RED;
 		else if (nrChannels == 3)
-			format = GL_RGB;
+			colorChannel = GL_RGB;
 		else if (nrChannels == 4)
-			format = GL_RGBA;
-		// Set texture wrapping format
-		GLenum wrappingFormat = GL_REPEAT;
-		if (name == "change-wrapping") wrappingFormat = GL_CLAMP_TO_EDGE;
+			colorChannel = GL_RGBA;
 
 		glBindTexture(GL_TEXTURE_2D, textureID);
 		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
-			format /*format to store the image*/, width, height, 0,
-			format /*format of the source image*/, GL_UNSIGNED_BYTE, data);
+			colorChannel /*format to store the image*/, width, height, 0,
+			colorChannel /*format of the source image*/, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 
 		// Set the texture wrapping parameters
@@ -388,7 +385,7 @@ unsigned int loadTexture(const char* path, const char* name) {
 	return textureID;
 }
 
-unsigned int loadCubeMap(vector<std::string> faces) {
+unsigned int loadCubeMap(const vector<std::string>& faces) {
 	unsigned int textureID;
 	glGenTextures(1, &textureID);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
