@@ -163,6 +163,9 @@
     <None Include="fs.glsl" />
     <None Include="green-fs.glsl" />
     <None Include="gs.glsl" />
+    <None Include="model-fs.glsl" />
+    <None Include="model-gs.glsl" />
+    <None Include="model-vs.glsl" />
     <None Include="red-fs.glsl" />
     <None Include="common-vs.glsl" />
     <None Include="blending-fragment.glsl" />

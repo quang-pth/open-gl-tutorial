@@ -165,6 +165,15 @@
     <None Include="gs.glsl">
       <Filter>Part IV\Geometry Shader</Filter>
     </None>
+    <None Include="model-fs.glsl">
+      <Filter>Part IV\Geometry Shader</Filter>
+    </None>
+    <None Include="model-vs.glsl">
+      <Filter>Part IV\Geometry Shader</Filter>
+    </None>
+    <None Include="model-gs.glsl">
+      <Filter>Part IV\Geometry Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
