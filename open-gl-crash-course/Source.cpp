@@ -72,6 +72,9 @@ int main() {
 	vao.linkAttrib(vbo, 1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (2 * sizeof(float)));
 	vao.unbind();
 
+	/// Load package model
+	Model ourModel("resources/objects/backpack/backpack.obj");
+
 	Shader shader("vs.glsl", "fs.glsl", "gs.glsl");
 
 	// draw as wireframe
@@ -88,8 +91,17 @@ int main() {
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 view = Settings::camera.GetViewMatrix();
+		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)Settings::SCR_WIDTH / (float)Settings::SCR_HEIGHT, 1.0f, 100.0f);
+
 		shader.use();
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		shader.setFloat("time", glfwGetTime());
 		vao.bind();
+		ourModel.Draw(shader);
 		vao.drawArrays(GL_POINTS, 0, 4);
 
 		glfwSwapBuffers(window);

@@ -2,8 +2,16 @@
 
 out vec4 FragColor;
 
-in vec3 fColor;
+in vec2 TexCoords;
+
+const float offset = 1.0 / 300.0;
+
+struct Material {
+	sampler2D diffuse_texture1;
+};
+
+uniform Material material;
 
 void main() {
-	FragColor = vec4(fColor, 1.0);
+	FragColor = texture(material.diffuse_texture1, TexCoords);
 }
