@@ -160,7 +160,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="blue-fs.glsl" />
+    <None Include="fs.glsl" />
     <None Include="green-fs.glsl" />
+    <None Include="gs.glsl" />
     <None Include="red-fs.glsl" />
     <None Include="common-vs.glsl" />
     <None Include="blending-fragment.glsl" />
@@ -181,6 +183,7 @@
     <None Include="skybox-fs.glsl" />
     <None Include="skybox-vs.glsl" />
     <None Include="VertexShader.glsl" />
+    <None Include="vs.glsl" />
     <None Include="yellow-fs.glsl" />
   </ItemGroup>
   <ItemGroup>

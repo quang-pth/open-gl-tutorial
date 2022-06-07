@@ -156,6 +156,15 @@
     <None Include="yellow-fs.glsl">
       <Filter>Part IV\Advanced GLSL</Filter>
     </None>
+    <None Include="vs.glsl">
+      <Filter>Part IV\Geometry Shader</Filter>
+    </None>
+    <None Include="fs.glsl">
+      <Filter>Part IV\Geometry Shader</Filter>
+    </None>
+    <None Include="gs.glsl">
+      <Filter>Part IV\Geometry Shader</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -226,6 +235,9 @@
     </Filter>
     <Filter Include="Others\Setting">
       <UniqueIdentifier>{4031a2ad-4b57-42dd-951b-c3f11adc7474}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Geometry Shader">
+      <UniqueIdentifier>{10e5d3f1-479d-4c15-9e1f-c2cd48bee966}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
