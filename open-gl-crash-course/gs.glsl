@@ -10,14 +10,14 @@ in VS_INFO {
 
 uniform mat4 projection;
 
-const float MAGNITUDE = 0.4;
+uniform float MAGNITUDE;
 
 void GenerateLine(int index) {
 	// first point position
 	gl_Position = projection * gl_in[index].gl_Position;
 	EmitVertex();
 	// second point position
-	gl_Position = projection * (gl_in[index].gl_Position + vec4(vs_info[index].Normal, 0.0) * MAGNITUDE);
+	gl_Position = projection * (gl_in[index].gl_Position + vec4(vs_info[index].Normal, 0.0) * (sin(MAGNITUDE) * 0.1));
 	EmitVertex();
 	// Draw line 
 	EndPrimitive();

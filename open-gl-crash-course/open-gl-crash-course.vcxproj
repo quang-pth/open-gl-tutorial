@@ -165,6 +165,8 @@
     <None Include="gs.glsl" />
     <None Include="model-fs.glsl" />
     <None Include="model-gs.glsl" />
+    <None Include="model-outline-fs.glsl" />
+    <None Include="model-outline-vs.glsl" />
     <None Include="model-vs.glsl" />
     <None Include="red-fs.glsl" />
     <None Include="common-vs.glsl" />

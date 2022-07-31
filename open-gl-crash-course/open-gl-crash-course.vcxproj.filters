@@ -156,23 +156,29 @@
     <None Include="yellow-fs.glsl">
       <Filter>Part IV\Advanced GLSL</Filter>
     </None>
-    <None Include="vs.glsl">
-      <Filter>Part IV\Geometry Shader</Filter>
-    </None>
-    <None Include="fs.glsl">
-      <Filter>Part IV\Geometry Shader</Filter>
-    </None>
-    <None Include="gs.glsl">
-      <Filter>Part IV\Geometry Shader</Filter>
-    </None>
     <None Include="model-fs.glsl">
-      <Filter>Part IV\Geometry Shader</Filter>
-    </None>
-    <None Include="model-vs.glsl">
-      <Filter>Part IV\Geometry Shader</Filter>
+      <Filter>Part IV\Geometry Shader\Default Shader</Filter>
     </None>
     <None Include="model-gs.glsl">
-      <Filter>Part IV\Geometry Shader</Filter>
+      <Filter>Part IV\Geometry Shader\Default Shader</Filter>
+    </None>
+    <None Include="model-vs.glsl">
+      <Filter>Part IV\Geometry Shader\Default Shader</Filter>
+    </None>
+    <None Include="fs.glsl">
+      <Filter>Part IV\Geometry Shader\Normal Shader</Filter>
+    </None>
+    <None Include="gs.glsl">
+      <Filter>Part IV\Geometry Shader\Normal Shader</Filter>
+    </None>
+    <None Include="vs.glsl">
+      <Filter>Part IV\Geometry Shader\Normal Shader</Filter>
+    </None>
+    <None Include="model-outline-vs.glsl">
+      <Filter>Part IV\Geometry Shader\Outline Shader</Filter>
+    </None>
+    <None Include="model-outline-fs.glsl">
+      <Filter>Part IV\Geometry Shader\Outline Shader</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -247,6 +253,15 @@
     </Filter>
     <Filter Include="Part IV\Geometry Shader">
       <UniqueIdentifier>{10e5d3f1-479d-4c15-9e1f-c2cd48bee966}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Geometry Shader\Default Shader">
+      <UniqueIdentifier>{d1e75aa2-8a39-4f94-bbfa-39fe25782db2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Geometry Shader\Normal Shader">
+      <UniqueIdentifier>{74306fd0-f573-4e85-8461-b9972ea70542}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Geometry Shader\Outline Shader">
+      <UniqueIdentifier>{c33d050e-4a74-42bc-9dd9-a3e103692261}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

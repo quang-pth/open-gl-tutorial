@@ -8,9 +8,10 @@ out VS_INFO {
 } vs_info;
 
 layout (std140) uniform Matrices {
-	mat4 model;
 	mat4 view;
 };
+
+uniform mat4 model;
 
 void main() {
 	gl_Position = view * model * vec4(aPos, 1.0);

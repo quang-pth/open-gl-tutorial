@@ -63,30 +63,37 @@ int main() {
 
 	// Config OpenGL global state
 	glEnable(GL_DEPTH_TEST);
-	//glEnable(GL_PROGRAM_POINT_SIZE);
+	glDepthFunc(GL_LESS);
+	// Stencil testing
+	glEnable(GL_STENCIL_TEST);
+	glStencilOp(GL_KEEP /*keep the stencil's content if stencil testing fail*/,
+		GL_KEEP /*keep the stencil's content if depth testing fail*/,
+		GL_REPLACE /*replace the stencil's content with the ref value if both test are succeed*/);
 
 	/// Load package model
 	Model ourModel("resources/objects/backpack/backpack.obj");
 
 	Shader normalShader("vs.glsl", "fs.glsl", "gs.glsl");
 	Shader modelShader("model-vs.glsl", "model-fs.glsl");
+	Shader outlineShader("model-outline-vs.glsl", "model-outline-fs.glsl");
 
 	// Get the uniform blocks
 	unsigned int normalMatrices = glGetUniformBlockIndex(normalShader.ID, "Matrices");
 	unsigned int modelMatrices = glGetUniformBlockIndex(modelShader.ID, "Matrices");
+	unsigned int outlineMatrices = glGetUniformBlockIndex(outlineShader.ID, "Matrices");
 	// Bind uniform blocks to the binding point 0
 	glUniformBlockBinding(normalShader.ID, normalMatrices, 0 /*binding point idx*/);
 	glUniformBlockBinding(modelShader.ID, modelMatrices, 0);
+	glUniformBlockBinding(outlineShader.ID, outlineMatrices, 0);
 	// Gen uniform buffer object
 	unsigned int uboMatrices;
 	glGenBuffers(1, &uboMatrices);
 	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-	glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
+	glBufferData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 	// Bind uniform buffer object to the binding point 0
 	glBindBufferRange(GL_UNIFORM_BUFFER, 0 /*binding point idx*/, uboMatrices,
-		0 /*offset*/, 2 * sizeof(glm::mat4) /*size of data*/);
-
+		0 /*offset*/, 1 * sizeof(glm::mat4) /*size of data*/);
 
 	// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -100,29 +107,52 @@ int main() {
 		Utils::processInput(window);
 		
 		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		glm::mat4 model = glm::mat4(1.0f);
+		glm::mat4 rotate = glm::rotate(model, glm::radians(45.0f), glm::vec3(cos(glfwGetTime()), sin(glfwGetTime()), cos(glfwGetTime())));
 		glm::mat4 view = Settings::camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)Settings::SCR_WIDTH / (float)Settings::SCR_HEIGHT, 1.0f, 100.0f);
 
 		// Set values for the uniform buffer object
 		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0 /*offset of the attr in the uniform block*/,
-			sizeof(glm::mat4), glm::value_ptr(model));
-		glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) /*view matrix offset*/,
+		glBufferSubData(GL_UNIFORM_BUFFER, 0 /*view matrix offset*/,
 			sizeof(glm::mat4), glm::value_ptr(view));
 		glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
+		glStencilMask(0x00);
+		//// Draw model normal
+		normalShader.use();
+		normalShader.setFloat("time", glfwGetTime());
+		normalShader.setFloat("MAGNITUDE", glfwGetTime());
+		normalShader.setMat4("model", rotate);
+		normalShader.setMat4("projection", projection);
+		ourModel.Draw(normalShader);
+
+		// Draw main model
+		glStencilFunc(GL_ALWAYS, 1, 0xFF); // stencil testing always pass and replace stencil's content with 1s
+		glStencilMask(0xFF);
 		// Draw package model
 		modelShader.use();
+		modelShader.setMat4("model", rotate);
 		modelShader.setMat4("projection", projection);
 		ourModel.Draw(modelShader);
 
-		normalShader.use();
-		normalShader.setFloat("time", glfwGetTime());
-		normalShader.setMat4("projection", projection);
-		ourModel.Draw(normalShader);
+		// Draw outline for package model
+		glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // only draw fragments that has stencil value not equal to 1
+		glStencilMask(0x00); // disable writing to the stencil buffer
+		// Draw scale model here
+		outlineShader.use();
+		glm::mat4 scale = glm::scale(rotate, glm::vec3(1.023f, 1.023, 1.023));
+		outlineShader.setMat4("model", scale);
+		outlineShader.setMat4("projection", projection);
+		outlineShader.setFloat("time", glfwGetTime());
+		ourModel.Draw(outlineShader);
+
+		// Reset everything to default
+		glStencilMask(0xFF);
+		glStencilFunc(GL_ALWAYS, 1, 0xFF);
+		glEnable(GL_DEPTH_TEST);
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
