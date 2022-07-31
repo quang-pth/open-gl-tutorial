@@ -29,9 +29,11 @@ void VAO::linkTexture(const GLenum& target, const GLenum& texture, const unsigne
 }
 
 void VAO::drawArrays(const GLenum& target, const int& first, const int& count) {
-	this->bind();
 	glDrawArrays(target, first, count);
-	this->unbind();
+}
+
+void VAO::drawArraysInstanced(const GLenum& target, const int& first, const int& count, const unsigned int& numberOfInstances) {
+	glDrawArraysInstanced(target, first, count, numberOfInstances);
 }
 
 // Unbinds the VAO

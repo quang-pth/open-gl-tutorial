@@ -163,6 +163,8 @@
     <None Include="fs.glsl" />
     <None Include="green-fs.glsl" />
     <None Include="gs.glsl" />
+    <None Include="instancing_fs.glsl" />
+    <None Include="instancing_vs.glsl" />
     <None Include="model-fs.glsl" />
     <None Include="model-gs.glsl" />
     <None Include="model-outline-fs.glsl" />

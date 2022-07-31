@@ -180,6 +180,12 @@
     <None Include="model-outline-fs.glsl">
       <Filter>Part IV\Geometry Shader\Outline Shader</Filter>
     </None>
+    <None Include="instancing_fs.glsl">
+      <Filter>Part IV\Instancing</Filter>
+    </None>
+    <None Include="instancing_vs.glsl">
+      <Filter>Part IV\Instancing</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -262,6 +268,9 @@
     </Filter>
     <Filter Include="Part IV\Geometry Shader\Outline Shader">
       <UniqueIdentifier>{c33d050e-4a74-42bc-9dd9-a3e103692261}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Instancing">
+      <UniqueIdentifier>{7ac00725-7368-48b7-815d-6253f981c5cd}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

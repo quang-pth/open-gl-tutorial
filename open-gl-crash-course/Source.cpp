@@ -17,12 +17,15 @@
 
 #include <iostream>
 
-float points[] = {
-	// position		// color
-	-0.5f, 0.5f,	0.0f, 0.0f, 1.0f,
-	 0.5f, 0.5f,	1.0f, 0.0f,	0.0f,
-	 0.5f, -0.5f,	0.0f, 1.0f,	0.0f,
-	-0.5f, -0.5f,	1.0f, 1.0f,	0.0f,
+float quadVertices[] = {
+	// positions		// colors
+	-0.05f,  0.05f,		1.0f, 0.0f, 0.0f, 
+	 0.05f, -0.05f,		0.0f, 1.0f, 0.0f,
+	-0.05f, -0.05f,		0.0f, 0.0f, 1.0f,
+
+	-0.05f,  0.05f,		1.0f, 0.0f, 0.0f,
+	 0.05f, -0.05f,		0.0f, 1.0f, 0.0f,
+	 0.05f,  0.05f,		0.0f, 1.0f, 1.0f,
 };
 
 int main() {
@@ -70,34 +73,52 @@ int main() {
 		GL_KEEP /*keep the stencil's content if depth testing fail*/,
 		GL_REPLACE /*replace the stencil's content with the ref value if both test are succeed*/);
 
-	/// Load package model
-	Model ourModel("resources/objects/backpack/backpack.obj");
+	// Object offsets
+	glm::vec2 translations[100];
+	int index = 0;
+	float offset = 0.1f;
+	for (int y = -10; y < 10; y += 2) {
+		for (int x = -10; x < 10; x += 2) {
+			glm::vec2 translation;
+			translation.x = (float)x / 10.0f + offset;
+			translation.y = (float)y / 10.0f + offset;
+			translations[index] = translation;
+			index += 1;
+		}
+	}
 
-	Shader normalShader("vs.glsl", "fs.glsl", "gs.glsl");
-	Shader modelShader("model-vs.glsl", "model-fs.glsl");
-	Shader outlineShader("model-outline-vs.glsl", "model-outline-fs.glsl");
+	// Config vao, vbo
+	unsigned int instancingVAO, instancingVBO, offsetInstanceVBO;
+	glGenVertexArrays(1, &instancingVAO);
+	glGenBuffers(1, &instancingVBO);
+	glGenBuffers(1, &offsetInstanceVBO);
+	// Bind vao
+	glBindVertexArray(instancingVAO);
+	// Position and color attributes
+	glBindBuffer(GL_ARRAY_BUFFER, instancingVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (2 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	// Offset attribute with instanced array
+	glBindBuffer(GL_ARRAY_BUFFER, offsetInstanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations, GL_STATIC_DRAW);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
+	glEnableVertexAttribArray(2);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glVertexAttribDivisor(2 /*attribute at location 2 is an instanced array*/, 
+		1 /*update the content of the offset attribute for every instances*/);
+	// Unbind vao
+	glBindVertexArray(0);
 
-	// Get the uniform blocks
-	unsigned int normalMatrices = glGetUniformBlockIndex(normalShader.ID, "Matrices");
-	unsigned int modelMatrices = glGetUniformBlockIndex(modelShader.ID, "Matrices");
-	unsigned int outlineMatrices = glGetUniformBlockIndex(outlineShader.ID, "Matrices");
-	// Bind uniform blocks to the binding point 0
-	glUniformBlockBinding(normalShader.ID, normalMatrices, 0 /*binding point idx*/);
-	glUniformBlockBinding(modelShader.ID, modelMatrices, 0);
-	glUniformBlockBinding(outlineShader.ID, outlineMatrices, 0);
-	// Gen uniform buffer object
-	unsigned int uboMatrices;
-	glGenBuffers(1, &uboMatrices);
-	glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-	glBufferData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::mat4), NULL, GL_STATIC_DRAW);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
-	// Bind uniform buffer object to the binding point 0
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0 /*binding point idx*/, uboMatrices,
-		0 /*offset*/, 1 * sizeof(glm::mat4) /*size of data*/);
+	// Shader program
+	Shader instancingShader("instancing_vs.glsl", "instancing_fs.glsl");
 
 	// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
+	
 	// Render loop
 	while (!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -110,44 +131,16 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		glm::mat4 model = glm::mat4(1.0f);
-		glm::mat4 rotate = glm::rotate(model, glm::radians(45.0f), glm::vec3(cos(glfwGetTime()), sin(glfwGetTime()), cos(glfwGetTime())));
 		glm::mat4 view = Settings::camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)Settings::SCR_WIDTH / (float)Settings::SCR_HEIGHT, 1.0f, 100.0f);
+		
+		instancingShader.use();
+		instancingShader.setMat4("model", model);
+		instancingShader.setMat4("view", view);
+		instancingShader.setMat4("projection", projection);
 
-		// Set values for the uniform buffer object
-		glBindBuffer(GL_UNIFORM_BUFFER, uboMatrices);
-		glBufferSubData(GL_UNIFORM_BUFFER, 0 /*view matrix offset*/,
-			sizeof(glm::mat4), glm::value_ptr(view));
-		glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
-		glStencilMask(0x00);
-		//// Draw model normal
-		normalShader.use();
-		normalShader.setFloat("time", glfwGetTime());
-		normalShader.setFloat("MAGNITUDE", glfwGetTime());
-		normalShader.setMat4("model", rotate);
-		normalShader.setMat4("projection", projection);
-		ourModel.Draw(normalShader);
-
-		// Draw main model
-		glStencilFunc(GL_ALWAYS, 1, 0xFF); // stencil testing always pass and replace stencil's content with 1s
-		glStencilMask(0xFF);
-		// Draw package model
-		modelShader.use();
-		modelShader.setMat4("model", rotate);
-		modelShader.setMat4("projection", projection);
-		ourModel.Draw(modelShader);
-
-		// Draw outline for package model
-		glStencilFunc(GL_NOTEQUAL, 1, 0xFF); // only draw fragments that has stencil value not equal to 1
-		glStencilMask(0x00); // disable writing to the stencil buffer
-		// Draw scale model here
-		outlineShader.use();
-		glm::mat4 scale = glm::scale(rotate, glm::vec3(1.023f, 1.023, 1.023));
-		outlineShader.setMat4("model", scale);
-		outlineShader.setMat4("projection", projection);
-		outlineShader.setFloat("time", glfwGetTime());
-		ourModel.Draw(outlineShader);
+		glBindVertexArray(instancingVAO);
+		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
 
 		// Reset everything to default
 		glStencilMask(0xFF);
@@ -158,6 +151,10 @@ int main() {
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
 	}
+
+	glDeleteVertexArrays(1, &instancingVAO);
+	glDeleteBuffers(1, &instancingVBO);
+	glDeleteBuffers(1, &offsetInstanceVBO);
 
 	glfwTerminate();
 	return 0;

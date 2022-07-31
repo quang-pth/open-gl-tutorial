@@ -21,6 +21,8 @@ public:
 	void linkTexture(const GLenum& target, const GLenum& texture, const unsigned int& textureData);
 	// draw
 	void drawArrays(const GLenum& target, const int& first, const int& count);
+	// draw instanced objects
+	void drawArraysInstanced(const GLenum& target, const int& first, const int& count, const unsigned int& numberOfInstances);
 	// Unbinds the VAO
 	void unbind();
 	// Deletes the VAO
