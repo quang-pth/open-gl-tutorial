@@ -37,6 +37,7 @@ public:
 	vector<Vertex> vertices;
 	vector<unsigned int> indices; // order to draw a mesh by its vertices
 	vector<Texture> textures;
+	unsigned int VAO, VBO, EBO;
 
 	// Method definition
 	Mesh(const vector<Vertex>& vertices, const vector<unsigned int>& indices, 
@@ -88,8 +89,6 @@ public:
 	}
 
 private:
-	unsigned int VAO, VBO, EBO;
-
 	// Method definition
 	void setUpMesh() {
 		glGenVertexArrays(1, &VAO);

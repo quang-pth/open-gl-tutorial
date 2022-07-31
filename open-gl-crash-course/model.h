@@ -21,10 +21,10 @@ public:
 			meshes[i].Draw(shader);
 		}
 	}
+	vector<Mesh> meshes;
 
 private:
 	// Model data
-	vector<Mesh> meshes;
 	string directory;
 	vector<Texture> textures_loaded;
 

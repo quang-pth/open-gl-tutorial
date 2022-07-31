@@ -180,11 +180,17 @@
     <None Include="model-outline-fs.glsl">
       <Filter>Part IV\Geometry Shader\Outline Shader</Filter>
     </None>
+    <None Include="planet_vs.glsl">
+      <Filter>Part IV\Instancing\Space</Filter>
+    </None>
+    <None Include="planet_fs.glsl">
+      <Filter>Part IV\Instancing\Space</Filter>
+    </None>
     <None Include="instancing_fs.glsl">
-      <Filter>Part IV\Instancing</Filter>
+      <Filter>Part IV\Instancing\Space</Filter>
     </None>
     <None Include="instancing_vs.glsl">
-      <Filter>Part IV\Instancing</Filter>
+      <Filter>Part IV\Instancing\Space</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -271,6 +277,9 @@
     </Filter>
     <Filter Include="Part IV\Instancing">
       <UniqueIdentifier>{7ac00725-7368-48b7-815d-6253f981c5cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Instancing\Space">
+      <UniqueIdentifier>{62bdbe59-c0ff-4be7-8d98-3fa8c7bc0c03}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

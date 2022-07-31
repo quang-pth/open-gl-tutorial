@@ -189,6 +189,8 @@
     <None Include="screen-framebuffer-vs.glsl" />
     <None Include="skybox-fs.glsl" />
     <None Include="skybox-vs.glsl" />
+    <None Include="planet_fs.glsl" />
+    <None Include="planet_vs.glsl" />
     <None Include="VertexShader.glsl" />
     <None Include="vs.glsl" />
     <None Include="yellow-fs.glsl" />

@@ -17,17 +17,6 @@
 
 #include <iostream>
 
-float quadVertices[] = {
-	// positions		// colors
-	-0.05f,  0.05f,		1.0f, 0.0f, 0.0f, 
-	 0.05f, -0.05f,		0.0f, 1.0f, 0.0f,
-	-0.05f, -0.05f,		0.0f, 0.0f, 1.0f,
-
-	-0.05f,  0.05f,		1.0f, 0.0f, 0.0f,
-	 0.05f, -0.05f,		0.0f, 1.0f, 0.0f,
-	 0.05f,  0.05f,		0.0f, 1.0f, 1.0f,
-};
-
 int main() {
 	glfwInit();
 	/*
@@ -72,49 +61,61 @@ int main() {
 	glStencilOp(GL_KEEP /*keep the stencil's content if stencil testing fail*/,
 		GL_KEEP /*keep the stencil's content if depth testing fail*/,
 		GL_REPLACE /*replace the stencil's content with the ref value if both test are succeed*/);
-
-	// Object offsets
-	glm::vec2 translations[100];
-	int index = 0;
-	float offset = 0.1f;
-	for (int y = -10; y < 10; y += 2) {
-		for (int x = -10; x < 10; x += 2) {
-			glm::vec2 translation;
-			translation.x = (float)x / 10.0f + offset;
-			translation.y = (float)y / 10.0f + offset;
-			translations[index] = translation;
-			index += 1;
-		}
+	
+	unsigned int amount = 5000;
+	glm::mat4* modelMatrices = new glm::mat4[amount];
+	srand(glfwGetTime());
+	float radius = 50.0f;
+	float offset = 5.0f;
+	for (unsigned int i = 0; i < amount; i++) {
+		glm::mat4 model = glm::mat4(1.0);
+		// translate
+		float angle = (float)i / (float)amount * 360.0f;
+		float displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float x = sin(angle) * radius + displacement;
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float y = displacement * 0.4f;
+		displacement = (rand() % (int)(2 * offset * 100)) / 100.0f - offset;
+		float z = cos(angle) * radius + displacement;
+		model = glm::translate(model, glm::vec3(x, y, z));
+		// scale
+		float scale = (rand() % 20) / 100.0f + 0.05f;
+		model = glm::scale(model, glm::vec3(scale));
+		// rotate
+		float rotateAngle = (rand() % 360);
+		model = glm::rotate(model, rotateAngle, glm::vec3(0.4f, 0.6f, 0.8f));
+		modelMatrices[i] = model;
 	}
 
-	// Config vao, vbo
-	unsigned int instancingVAO, instancingVBO, offsetInstanceVBO;
-	glGenVertexArrays(1, &instancingVAO);
-	glGenBuffers(1, &instancingVBO);
-	glGenBuffers(1, &offsetInstanceVBO);
-	// Bind vao
-	glBindVertexArray(instancingVAO);
-	// Position and color attributes
-	glBindBuffer(GL_ARRAY_BUFFER, instancingVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
-	glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*) (2 * sizeof(float)));
-	glEnableVertexAttribArray(1);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	// Offset attribute with instanced array
-	glBindBuffer(GL_ARRAY_BUFFER, offsetInstanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(glm::vec2) * 100, &translations, GL_STATIC_DRAW);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(glm::vec2), (void*)0);
-	glEnableVertexAttribArray(2);
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glVertexAttribDivisor(2 /*attribute at location 2 is an instanced array*/, 
-		1 /*update the content of the offset attribute for every instances*/);
-	// Unbind vao
-	glBindVertexArray(0);
-
 	// Shader program
-	Shader instancingShader("instancing_vs.glsl", "instancing_fs.glsl");
+	Shader shader("planet_vs.glsl", "planet_fs.glsl");
+	Shader asteriodShader("instancing_vs.glsl", "instancing_fs.glsl");
+	Model planet("resources/objects/planet/mars/planet.obj");
+	Model asteriod("resources/objects/planet/rock/rock.obj");
+
+	// Config the asteriod instace matrix
+	unsigned int instanceVBO;
+	glGenBuffers(1, &instanceVBO);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, amount * sizeof(glm::mat4), &modelMatrices[0], GL_STATIC_DRAW);
+	for (unsigned int i = 0; i < asteriod.meshes.size(); i++) {
+		unsigned int asteriodVAO = asteriod.meshes[i].VAO;
+		glBindVertexArray(asteriodVAO);
+		std::size_t vec4AttributeSize = sizeof(glm::vec4);
+		glVertexAttribPointer(7, 4, GL_FLOAT, GL_FALSE, 4 * vec4AttributeSize, (void*)0);
+		glEnableVertexAttribArray(7);
+		glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, 4 * vec4AttributeSize, (void*)(1 * vec4AttributeSize));
+		glEnableVertexAttribArray(8);
+		glVertexAttribPointer(9, 4, GL_FLOAT, GL_FALSE, 4 * vec4AttributeSize, (void*)(2 * vec4AttributeSize));
+		glEnableVertexAttribArray(9);
+		glVertexAttribPointer(10, 4, GL_FLOAT, GL_FALSE, 4 * vec4AttributeSize, (void*)(3 * vec4AttributeSize));
+		glEnableVertexAttribArray(10);
+		glVertexAttribDivisor(7, 1);
+		glVertexAttribDivisor(8, 1);
+		glVertexAttribDivisor(9, 1);
+		glVertexAttribDivisor(10, 1);
+		glBindVertexArray(0);
+	}
 
 	// draw as wireframe
 	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -131,16 +132,27 @@ int main() {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(0.0f, -0.3f, 0.0f));
+		model = glm::scale(model, glm::vec3(4.0f, 4.0f, 4.0f));
+		model = glm::rotate(model, currentFrame, glm::vec3(0, 1, 0));
 		glm::mat4 view = Settings::camera.GetViewMatrix();
 		glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)Settings::SCR_WIDTH / (float)Settings::SCR_HEIGHT, 1.0f, 100.0f);
 		
-		instancingShader.use();
-		instancingShader.setMat4("model", model);
-		instancingShader.setMat4("view", view);
-		instancingShader.setMat4("projection", projection);
-
-		glBindVertexArray(instancingVAO);
-		glDrawArraysInstanced(GL_TRIANGLES, 0, 6, 100);
+		shader.use();
+		shader.setMat4("model", model);
+		shader.setMat4("view", view);
+		shader.setMat4("projection", projection);
+		// Draw planet
+		planet.Draw(shader);
+		// Draw asteriods with instanced array
+		asteriodShader.use();
+		asteriodShader.setMat4("view", view);
+		asteriodShader.setMat4("projection", projection);
+		for (unsigned int i = 0; i < asteriod.meshes.size(); i++) {
+			glBindVertexArray(asteriod.meshes[i].VAO);
+			glDrawElementsInstanced(GL_TRIANGLES, asteriod.meshes[i].indices.size(),
+				GL_UNSIGNED_INT, 0, amount);
+		}
 
 		// Reset everything to default
 		glStencilMask(0xFF);
@@ -152,9 +164,7 @@ int main() {
 		glfwPollEvents();
 	}
 
-	glDeleteVertexArrays(1, &instancingVAO);
-	glDeleteBuffers(1, &instancingVBO);
-	glDeleteBuffers(1, &offsetInstanceVBO);
+	glDeleteBuffers(1, &instanceVBO);
 
 	glfwTerminate();
 	return 0;
