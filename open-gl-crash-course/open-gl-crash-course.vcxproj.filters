@@ -192,6 +192,12 @@
     <None Include="instancing_vs.glsl">
       <Filter>Part IV\Instancing\Space</Filter>
     </None>
+    <None Include="aa_fs.glsl">
+      <Filter>Part IV\Anti-Aliasing</Filter>
+    </None>
+    <None Include="aa_vs.glsl">
+      <Filter>Part IV\Anti-Aliasing</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
@@ -280,6 +286,9 @@
     </Filter>
     <Filter Include="Part IV\Instancing\Space">
       <UniqueIdentifier>{62bdbe59-c0ff-4be7-8d98-3fa8c7bc0c03}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Part IV\Anti-Aliasing">
+      <UniqueIdentifier>{d97500d8-1233-470c-b5dc-854251d42aa2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>
