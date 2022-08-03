@@ -12,6 +12,7 @@ public:
 	RBO(unsigned int width, unsigned int height);
 
 	void initRenderBuffer(unsigned int width, unsigned int height);
+	void initRenderBufferMS(unsigned int width, unsigned int height);
 	void bind();
 	void unbind();
 	void deleteObj();

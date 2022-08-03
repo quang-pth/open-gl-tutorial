@@ -14,6 +14,12 @@ void TextureBuffer::initTextureBuffer(int width, int height) {
 	this->unbind();
 }
 
+void TextureBuffer::initTextureBufferMS(int width, int height) {
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureID);
+	glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, width, height, GL_TRUE);
+	glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+}
+
 void TextureBuffer::bind() {
 	glBindTexture(GL_TEXTURE_2D, textureID);
 }

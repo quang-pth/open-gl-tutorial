@@ -160,6 +160,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="aa_fs.glsl" />
+    <None Include="aa_post_fs.glsl" />
+    <None Include="aa_post_vs.glsl" />
     <None Include="aa_vs.glsl" />
     <None Include="blue-fs.glsl" />
     <None Include="fs.glsl" />

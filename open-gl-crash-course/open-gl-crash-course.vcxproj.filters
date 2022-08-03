@@ -198,6 +198,12 @@
     <None Include="aa_vs.glsl">
       <Filter>Part IV\Anti-Aliasing</Filter>
     </None>
+    <None Include="aa_post_fs.glsl">
+      <Filter>Part IV\Anti-Aliasing</Filter>
+    </None>
+    <None Include="aa_post_vs.glsl">
+      <Filter>Part IV\Anti-Aliasing</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

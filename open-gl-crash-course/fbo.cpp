@@ -12,6 +12,10 @@ void FBO::linkTexture(const TextureBuffer& texColorBuffer) {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer.textureID, 0);
 }
 
+void FBO::linkTextureMS(const TextureBuffer& texColorBuffer) {
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, texColorBuffer.textureID, 0);
+}
+
 void FBO::bind() {
 	glBindFramebuffer(GL_FRAMEBUFFER, fboID);
 }

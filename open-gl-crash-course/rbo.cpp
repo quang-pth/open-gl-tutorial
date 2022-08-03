@@ -13,6 +13,14 @@ void RBO::initRenderBuffer(unsigned int width, unsigned int height) {
 	this->unbind();
 }
 
+void RBO::initRenderBufferMS(unsigned int width, unsigned int height) {
+	this->bind();
+	glBindRenderbuffer(GL_RENDERBUFFER, rboID);
+	// Attach the stencil buffer and depth buffer to the FBO
+	glRenderbufferStorageMultisample(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 4, width, height);
+	this->unbind();
+}
+
 void RBO::bind() {
 	glBindRenderbuffer(GL_RENDERBUFFER, rboID);
 }

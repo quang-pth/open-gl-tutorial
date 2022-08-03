@@ -12,6 +12,7 @@ public:
 	TextureBuffer(int width, int height);
 
 	void initTextureBuffer(int width, int height);
+	void initTextureBufferMS(int width, int height);
 	void bind();
 	void unbind();
 	void deleteObj();

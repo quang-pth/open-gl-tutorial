@@ -16,6 +16,7 @@ public:
 
 	void linkRenderBuffer(const RBO& renderBuffer);
 	void linkTexture(const TextureBuffer& texColorBuffer);
+	void linkTextureMS(const TextureBuffer& texColorBuffer);
 	void bind();
 	void checkCompileFramebuffer();
 	void unbind();
