@@ -11,8 +11,8 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
-void generateTexture();
+void processInput(GLFWwindow* window, Shader& shader);
+unsigned int generateTexture(const char* path, const bool& gammaEnable);
 
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
@@ -30,8 +30,23 @@ bool firstMouse = true;
 float deltaTime = 0.0f; // time between current frame and last frame
 float lastFrame = 0.0f; // time of the last frame
 
-// Light Source Position
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPositions[] = {
+	glm::vec3(-3.0f, 0.0f, 0.0f),
+	glm::vec3(-1.0f, 0.0f, 0.0f),
+	glm::vec3(1.0f, 0.0f, 0.0f),
+	glm::vec3(3.0f, 0.0f, 0.0f)
+};
+
+glm::vec3 lightColors[] = {
+	glm::vec3(0.25),
+	glm::vec3(0.50),
+	glm::vec3(0.75),
+	glm::vec3(1.00)
+};
+
+// Lighting mode
+bool gamma = false;
+bool keyIsPressed = false;
 
 int main() {
 	glfwInit();
@@ -73,11 +88,6 @@ int main() {
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 
-	// Build and Compile shader
-	Shader lightingShader("VertexShader.glsl", "FragmentShader.glsl");
-	Shader lightCubdeShader("LightSourceVertexShader.glsl", "LightSourceFragmentShader.glsl");
-
-	// 36 Vertices Data to render a cube
 	float vertices[] = {
 		// Position				// Normal Vector perpendicular to each vertex
 		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,
@@ -120,84 +130,102 @@ int main() {
 		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
 		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
 		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
 	};
 
-	// START BINDING CALLS
-	unsigned int cubeVAO, VBO;
-	// Create VAO to manage VBO and attributes pointers
-	glGenVertexArrays(1, &cubeVAO);
-	// Create Vertex Buffer Object (VBO) to manage Vertices Data
-	glGenBuffers(1, &VBO); // generate VBO's id
-	glBindVertexArray(cubeVAO); // bind the Vertex Array Object
-	// VBO
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// Configure the POSITION vertex attributes
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0); // enable the vertex position attribute
-	// Configure the NORMAL VECTOR vertex attributes
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-	glEnableVertexAttribArray(1);
+	float planeVertices[] = {
+		// positions            // normals         // texcoords
+		 10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+		-10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  0.0f,
+		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  10.0f,
 
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
-	glBindVertexArray(0); // unbind VAO
-	// END BINDING CALLS
+		 10.0f, -0.5f,  10.0f,  0.0f, 1.0f, 0.0f,  10.0f,  0.0f,
+		-10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  0.0f,  10.0f,
+		 10.0f, -0.5f, -10.0f,  0.0f, 1.0f, 0.0f,  10.0f, 10.0f
+	};
 
-	// Create light source
-	unsigned int lightCubeVAO;
-	glGenVertexArrays(1, &lightCubeVAO);
-	glBindVertexArray(lightCubeVAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	unsigned int planeVAO, planeVBO;
+	glGenVertexArrays(1, &planeVAO);
+	glGenBuffers(1, &planeVBO);
+	glBindVertexArray(planeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+	glEnableVertexAttribArray(2);
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 	glBindVertexArray(0);
-		
+
+	// Create light source
+	unsigned int lightCubeVAO, lightCubeVBO;
+	glGenVertexArrays(1, &lightCubeVAO);
+	glGenBuffers(1, &lightCubeVBO);
+	glBindVertexArray(lightCubeVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, lightCubeVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), &vertices, GL_STATIC_DRAW);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+	glEnableVertexAttribArray(0);
+	glBindVertexArray(0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+	Shader planeShader("VertexShader.glsl", "FragmentShader.glsl");
+	Shader lightSourceShader("LightSourceVertexShader.glsl", "LightSourceFragmentShader.glsl");
+	unsigned int floorTexture = generateTexture("Textures/wood.png", false);
+	unsigned int floorTextureGammaCorrected = generateTexture("Textures/wood.png", true);
+
+	planeShader.use();
+	planeShader.setInt("floorTexture", 0);
+	planeShader.setInt("material.shininess", 32);
+	planeShader.setInt("material.diffuse", 0);
+	planeShader.setInt("material.specular", 1);
+
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
 		deltaTime = currentFrame - lastFrame;
 
 		// Close GLFW when pressing Escape key
-		processInput(window);
+		processInput(window, planeShader);
 
 		// Clear color of the previous frame on the buffer
-		glClearColor(0.2f, 0.3f, 0.3f, 1.0f); // state-setting function
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f); // state-setting function
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
 
-		// Draw CUBE
-		lightingShader.use();
-		lightingShader.setVec3("objectColor", 1.0f, 0.5f, 0.31f);
-		lightingShader.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-		lightingShader.setVec3("lightPos", lightPos);
-		lightingShader.setVec3("viewPos", camera.Position);
-		
+		planeShader.use();
+		planeShader.setBool("gamma", gamma);
+		glUniform3fv(glGetUniformLocation(planeShader.ID, "lightPositions"), 4, &lightPositions[0][0]);
+		glUniform3fv(glGetUniformLocation(planeShader.ID, "lightColors"), 4, &lightColors[0][0]);
+		planeShader.setVec3("viewPos", camera.Position);
 		glm::mat4 model = glm::mat4(1.0f);
-		lightingShader.setMat4("model", model);
-
+		planeShader.setMat4("model", model);
 		glm::mat4 view = camera.GetViewMatrix();
-		lightingShader.setMat4("view", view);
-
+		planeShader.setMat4("view", view);
 		float aspectRatio = (float) SCR_WIDTH / (float)SCR_HEIGHT;
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom) /*Camera FOV*/, aspectRatio, 0.1f /*distance to the near plane*/, 100.0f /*distance to the further plane*/);
-		lightingShader.setMat4("projection", projection);
-		
-		glBindVertexArray(cubeVAO);
+		planeShader.setMat4("projection", projection);
+		glBindVertexArray(planeVAO);
+		glBindTexture(GL_TEXTURE_2D, gamma ? floorTextureGammaCorrected : floorTexture);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 		glBindVertexArray(0);
 
 		// Light Source
-		model = glm::mat4(1.0f);
-		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.2f));
-		lightCubdeShader.use();
-		lightCubdeShader.setMat4("model", model);
-		lightCubdeShader.setMat4("view", view);
-		lightCubdeShader.setMat4("projection", projection);
-		glBindVertexArray(lightCubeVAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
-		glBindVertexArray(0);
+		lightSourceShader.use();
+		lightSourceShader.setMat4("view", view);
+		lightSourceShader.setMat4("projection", projection);
+		for (unsigned int i = 0; i < 4; i++) {
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, lightPositions[i]);
+			model = glm::scale(model, glm::vec3(0.2f));
+			lightSourceShader.setMat4("model", model);
+			glBindVertexArray(lightCubeVAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+			glBindVertexArray(0);
+		}
+
+		std::cout << (gamma ? "Gamma enabled" : "Gamma disabled") << std::endl;
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
@@ -207,8 +235,8 @@ int main() {
 	}
 
 	// de-allocate resources once the program is about to exit
-	glDeleteBuffers(1, &VBO);
-	glDeleteBuffers(1, &cubeVAO);
+	glDeleteBuffers(1, &planeVBO);
+	glDeleteBuffers(1, &planeVAO);
 	glDeleteBuffers(1, &lightCubeVAO);
 
 	glfwTerminate();
@@ -241,7 +269,7 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-void processInput(GLFWwindow* window) {
+void processInput(GLFWwindow* window, Shader &shader) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
@@ -267,14 +295,20 @@ void processInput(GLFWwindow* window) {
 		END Control Camera
 	=============================================
 	*/
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !keyIsPressed) {
+		gamma = !gamma;
+		keyIsPressed = true;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
+		keyIsPressed = false;
+	}
 }
 
-void generateTexture() {
-	// Create Texture object
-	unsigned int texture[2];
-	glGenTextures(2, texture);
-	// Texture Object 1
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
+unsigned int generateTexture(const char* path, const bool& gammaEnable) {
+	unsigned int texture;
+	glGenTextures(1, &texture);
+	glBindTexture(GL_TEXTURE_2D, texture);
 	// Set the texture wrapping parameters
 	// S, T, R (3D texture) => x, y, z axis
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
@@ -285,38 +319,29 @@ void generateTexture() {
 	// Load and generate the Texture
 	int width, height, nrChannels;
 	stbi_set_flip_vertically_on_load(true); // tell stb_image.h to flip loaded texture's on the y-axis.
-	unsigned char* data = stbi_load("Textures/container.jpg", &width, &height, &nrChannels, 0); // get image width, height and color channels
+	//unsigned char* data = stbi_load("Textures/container.jpg", &width, &height, &nrChannels, 0); // get image width, height and color channels
+	unsigned char* data = stbi_load(path, &width, &height, &nrChannels, 0); // get image width, height and color channels
 	if (data) {
-		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
-			GL_RGB /*format to store the image*/, width, height, 0,
-			GL_RGB /*format of the source image*/, GL_UNSIGNED_BYTE, data);
-		glGenerateMipmap(GL_TEXTURE_2D);
-	}
-	else {
-		std::cout << "====================TEXTURE==================" << std::endl;
-		std::cout << "Width: " << width << std::endl;
-		std::cout << "Height: " << height << std::endl;
-		std::cout << "nrChannels: " << nrChannels << std::endl;
-		std::cout << "Failed to load texture: " << stbi_failure_reason() << std::endl;
-		std::cout << "====================TEXTURE==================" << std::endl;
-	}
-	// Free the image memory
-	stbi_image_free(data);
+		GLenum internalFormat;
+		GLenum dataFormat;
+		if (nrChannels == 1)
+		{
+			internalFormat = dataFormat = GL_RED;
+		}
+		else if (nrChannels == 3)
+		{
+			internalFormat = gammaEnable ? GL_SRGB : GL_RGB;
+			dataFormat = GL_RGB;
+		}
+		else if (nrChannels == 4)
+		{
+			internalFormat = gammaEnable ? GL_SRGB_ALPHA : GL_RGBA;
+			dataFormat = GL_RGBA;
+		}
 
-	// Texture Object 2
-	glBindTexture(GL_TEXTURE_2D, texture[1]);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT); // set mirror mode on texture x axis
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT); // set mirror mode on texture y axis
-	// Texture Filtering
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Mipmap filtering for texture get scaled down
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR); // linear for scale up
-	// Load and generate the Texture
-	data = stbi_load("Textures/awesomeface.png", &width, &height, &nrChannels, 0); // get image width, height and color channels
-	if (data) {
-		// png image has transparency and alpha channel => image source data-type is of GL_RGBA
 		glTexImage2D(GL_TEXTURE_2D, 0 /*Mipmap level*/,
-			GL_RGB /*format to store the image*/, width, height, 0,
-			GL_RGBA /*format of the source image*/, GL_UNSIGNED_BYTE, data);
+			internalFormat /*format to store the image*/, width, height, 0,
+			dataFormat /*format of the source image*/, GL_UNSIGNED_BYTE, data);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 	else {
@@ -329,4 +354,5 @@ void generateTexture() {
 	}
 	// Free the image memory
 	stbi_image_free(data);
+	return texture;
 }
