@@ -44,6 +44,24 @@
     <None Include="LightSourceVertexShader.glsl">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="shadow-mapping-vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shadow-mapping-fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="debug-quad-vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="debug-quad-fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shadow-mapping-depth-vs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="shadow-mapping-depth-fs.glsl">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">

@@ -149,6 +149,12 @@
     <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="debug-quad-fs.glsl" />
+    <None Include="debug-quad-vs.glsl" />
+    <None Include="shadow-mapping-depth-fs.glsl" />
+    <None Include="shadow-mapping-depth-vs.glsl" />
+    <None Include="shadow-mapping-fs.glsl" />
+    <None Include="shadow-mapping-vs.glsl" />
     <None Include="FragmentShader.glsl" />
     <None Include="LightSourceFragmentShader.glsl" />
     <None Include="LightSourceVertexShader.glsl" />
