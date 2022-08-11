@@ -6,16 +6,17 @@ in VS_OUT {
 	vec3 FragPos;
 	vec3 Normal;
 	vec2 TexCoords;
-	vec4 FragPosLightSpace;
 } fs_in;
 
 uniform sampler2D diffuseTexture;
-uniform sampler2D shadowMap;
+uniform samplerCube depthMap;
 
 uniform vec3 lightPos;
 uniform vec3 viewPos;
 
-float ShadowCalculation(vec4 fragPosLightSpace, float bias);
+uniform float far_plane;
+
+float ShadowCalculation(vec3 fragPos);
 
 void main() {
     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
@@ -36,29 +37,20 @@ void main() {
     vec3 specular = spec * lightColor;    
     // calculate shadow
     float bias = max(0.05 * (1.0 - dot(normal, lightDir)), 0.005);
-    float shadow = ShadowCalculation(fs_in.FragPosLightSpace, bias);                      
+    float shadow = ShadowCalculation(fs_in.FragPos);                      
     vec3 lighting = (ambient + (1.0 - shadow) * (diffuse + specular)) * color;    
     
     FragColor = vec4(lighting, 1.0);
+    // Debug mode
+//    FragColor = vec4(vec3(texture(depthMap, fs_in.FragPos - lightPos).r), 1.0); 
 }
 
-float ShadowCalculation(vec4 fragPosLightSpace, float bias) {
-    // perform perspective divide
-    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
-    // transform to range [0, 1]
-    projCoords = projCoords * 0.5 + 0.5;
-    if (projCoords.z > 1.0) return 0.0;
-    // calculate the closest point value from the light's perspective
-    float closestDepth = texture(shadowMap, projCoords.xy).r;
-    // get the current fragment depth value from the light's perspective
-    float currentDepth = projCoords.z;
-    float shadow = 0.0;
-    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
-    for (int x = -1; x <= 1; ++x) {
-        for (int y = -1; y <= 1; ++y) {
-            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
-            shadow += currentDepth - bias > pcfDepth ? 1.0 : 0.0;
-        }
-    }
-    return shadow / 9;
+float ShadowCalculation(vec3 fragPos) {
+    vec3 fragToLight = fragPos - lightPos;
+    float closestDepth = texture(depthMap, fragToLight).r;
+    closestDepth *= far_plane;
+    float currentDepth = length(fragToLight);
+    float bias = 0.05;
+    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    return shadow;
 }

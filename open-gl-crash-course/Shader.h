@@ -9,14 +9,79 @@
 #include<sstream>
 #include<iostream>
 
-#pragma once
 class Shader
 {
 public:
 	// shader program ID
 	unsigned int ID;
 
-	Shader(const char* vertexPath, const char* fragmentPath) 
+	Shader(const char* vertexPath, const char* fragmentPath, const char* geometryPath)
+	{
+		// retrieve vertex and fragment source code
+		std::string vertexCode;
+		std::string fragmentCode;
+		std::string geometryCode;
+		std::ifstream vShaderFile;
+		std::ifstream fShaderFile;
+		std::ifstream gShaderFile;
+		// ensure ifstream objects can throw exceptions:
+		vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+		gShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+
+		try {
+			// open filwes
+			vShaderFile.open(vertexPath);
+			fShaderFile.open(fragmentPath);
+			gShaderFile.open(geometryPath);
+			std::stringstream vShaderStream, fShaderStream, gShaderStream;
+			// read file's buffer content into stream
+			vShaderStream << vShaderFile.rdbuf();
+			fShaderStream << fShaderFile.rdbuf();
+			gShaderStream << gShaderFile.rdbuf();
+			// close file
+			vShaderFile.close();
+			fShaderFile.close();
+			gShaderFile.close();
+			// convert stream into string
+			vertexCode = vShaderStream.str();
+			fragmentCode = fShaderStream.str();
+			geometryCode = gShaderStream.str();
+		}
+		catch (std::ifstream::failure e) {
+			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
+		}
+
+		const char* vShaderCode = vertexCode.c_str();
+		const char* fShaderCode = fragmentCode.c_str();
+		const char* gShaderCode = geometryCode.c_str();
+		// Compile shader
+		unsigned int vertex, fragment, geometry;
+		// Vertex Shader
+		vertex = glCreateShader(GL_VERTEX_SHADER);
+		glShaderSource(vertex, 1, &vShaderCode, NULL);
+		glCompileShader(vertex);
+		checkComplieShader(vertex, "VERTEX");
+		// Fragment Shader
+		fragment = glCreateShader(GL_FRAGMENT_SHADER);
+		glShaderSource(fragment, 1, &fShaderCode, NULL);
+		glCompileShader(fragment);
+		checkComplieShader(fragment, "FRAGMENT");
+		// Geometry Shader
+		geometry = glCreateShader(GL_GEOMETRY_SHADER);
+		glShaderSource(geometry, 1, &gShaderCode, NULL);
+		glCompileShader(geometry);
+		checkComplieShader(geometry, "GEOMETRY");
+		// Link Program
+		ID = glCreateProgram();
+		glAttachShader(ID, vertex);
+		glAttachShader(ID, fragment);
+		glAttachShader(ID, geometry);
+		glLinkProgram(ID);
+		checkComplieShader(ID, "PROGRAM");
+	}
+
+	Shader(const char* vertexPath, const char* fragmentPath)
 	{
 		// retrieve vertex and fragment source code
 		std::string vertexCode;
@@ -26,12 +91,12 @@ public:
 		// ensure ifstream objects can throw exceptions:
 		vShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
 		fShaderFile.exceptions(std::ifstream::failbit | std::ifstream::badbit);
-		
+
 		try {
-			// open files
+			// open filwes
 			vShaderFile.open(vertexPath);
 			fShaderFile.open(fragmentPath);
-			std::stringstream vShaderStream, fShaderStream;
+			std::stringstream vShaderStream, fShaderStream, gShaderStream;
 			// read file's buffer content into stream
 			vShaderStream << vShaderFile.rdbuf();
 			fShaderStream << fShaderFile.rdbuf();
@@ -41,7 +106,7 @@ public:
 			// convert stream into string
 			vertexCode = vShaderStream.str();
 			fragmentCode = fShaderStream.str();
-		} 
+		}
 		catch (std::ifstream::failure e) {
 			std::cout << "ERROR::SHADER::FILE_NOT_SUCCESFULLY_READ" << std::endl;
 		}
@@ -59,7 +124,7 @@ public:
 		fragment = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(fragment, 1, &fShaderCode, NULL);
 		glCompileShader(fragment);
-		checkComplieShader(fragment, "SHADER");
+		checkComplieShader(fragment, "FRAGMENT");
 		// Link Program
 		ID = glCreateProgram();
 		glAttachShader(ID, vertex);
@@ -67,22 +132,23 @@ public:
 		glLinkProgram(ID);
 		checkComplieShader(ID, "PROGRAM");
 	}
-	
+
+
 	// use the shader
 	void use() {
 		glUseProgram(ID);
 	}
 
 	// utility uniform functions
-	void setBool(const std::string& name, bool value) const 
+	void setBool(const std::string& name, const bool& value) const
 	{
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 	}
-	void setInt(const std::string& name, int value) const 
+	void setInt(const std::string& name, const int& value) const
 	{
 		glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 	}
-	void setFloat(const std::string& name, float value) const 
+	void setFloat(const std::string& name, const float& value) const
 	{
 		glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 	}
@@ -91,7 +157,7 @@ public:
 	{
 		glUniform2fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 	}
-	void setVec2(const std::string& name, float x, float y) const
+	void setVec2(const std::string& name, const float& x, const float& y) const
 	{
 		glUniform2f(glGetUniformLocation(ID, name.c_str()), x, y);
 	}
@@ -100,7 +166,7 @@ public:
 	{
 		glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 	}
-	void setVec3(const std::string& name, float x, float y, float z) const
+	void setVec3(const std::string& name, const float& x, const float& y, const float& z) const
 	{
 		glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
 	}
@@ -109,7 +175,7 @@ public:
 	{
 		glUniform4fv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
 	}
-	void setVec4(const std::string& name, float x, float y, float z, float w) const
+	void setVec4(const std::string& name, const float& x, const float& y, const float& z, const float& w) const
 	{
 		glUniform4f(glGetUniformLocation(ID, name.c_str()), x, y, z, w);
 	}
@@ -129,7 +195,7 @@ public:
 		glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1 /*Number of matrices*/, GL_FALSE, &mat[0][0]);
 	}
 
-	void checkComplieShader(GLuint shader, std::string shaderType) {
+	void checkComplieShader(const GLuint& shader, const std::string& shaderType) {
 		int success;
 		char infoLog[512];
 		if (shaderType != "PROGRAM") {

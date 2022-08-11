@@ -151,6 +151,9 @@
   <ItemGroup>
     <None Include="debug-quad-fs.glsl" />
     <None Include="debug-quad-vs.glsl" />
+    <None Include="point-shadow-depth-fs.glsl" />
+    <None Include="point-shadow-depth-gs.glsl" />
+    <None Include="point-shadow-depth-vs.glsl" />
     <None Include="shadow-mapping-depth-fs.glsl" />
     <None Include="shadow-mapping-depth-vs.glsl" />
     <None Include="shadow-mapping-fs.glsl" />
