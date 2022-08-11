@@ -18,6 +18,15 @@ uniform float far_plane;
 
 float ShadowCalculation(vec3 fragPos);
 
+vec3 sampleOffsetDirections[20] = vec3[]
+(
+    vec3( 1, 1, 1), vec3( 1, -1, 1), vec3(-1, -1, 1), vec3(-1, 1, 1),
+    vec3( 1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+    vec3( 1, 1, 0), vec3( 1, -1, 0), vec3(-1, -1, 0), vec3(-1, 1, 0),
+    vec3( 1, 0, 1), vec3(-1, 0, 1), vec3( 1, 0, -1), vec3(-1, 0, -1),
+    vec3( 0, 1, 1), vec3( 0, -1, 1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
 void main() {
     vec3 color = texture(diffuseTexture, fs_in.TexCoords).rgb;
     vec3 normal = normalize(fs_in.Normal);
@@ -50,7 +59,18 @@ float ShadowCalculation(vec3 fragPos) {
     float closestDepth = texture(depthMap, fragToLight).r;
     closestDepth *= far_plane;
     float currentDepth = length(fragToLight);
+    float shadow = 0.0;
     float bias = 0.05;
-    float shadow = currentDepth - bias > closestDepth ? 1.0 : 0.0;
+    int samples = 20;
+    float viewDistance = length(viewPos - fragPos);
+    float radius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    for (int i = 0; i < samples; i++) {
+        float closestDepth = texture(depthMap, fragToLight + sampleOffsetDirections[i] * radius).r;
+        closestDepth *= far_plane;
+        if (currentDepth - bias > closestDepth) {
+            shadow += 1.0;
+        }
+    }
+    shadow /= float(samples);
     return shadow;
 }
