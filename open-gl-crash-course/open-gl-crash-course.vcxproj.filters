@@ -19,6 +19,9 @@
     <Filter Include="Source Files\Directional Shadow">
       <UniqueIdentifier>{2fae9a57-e192-47f3-8674-11a812000c3c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Normal Mapping">
+      <UniqueIdentifier>{f1699f4e-0d3c-4426-83dd-456cde239b44}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -76,6 +79,12 @@
     </None>
     <None Include="point-shadow-depth-gs.glsl">
       <Filter>Source Files\Point Shadow</Filter>
+    </None>
+    <None Include="normal_mapping_vs.glsl">
+      <Filter>Source Files\Normal Mapping</Filter>
+    </None>
+    <None Include="normal_mapping_fs.glsl">
+      <Filter>Source Files\Normal Mapping</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
