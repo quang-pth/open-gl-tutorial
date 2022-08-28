@@ -151,6 +151,10 @@
   <ItemGroup>
     <None Include="debug-quad-fs.glsl" />
     <None Include="debug-quad-vs.glsl" />
+    <None Include="hdr_fs.glsl" />
+    <None Include="hdr_vs.glsl" />
+    <None Include="lighting_fs.glsl" />
+    <None Include="lighting_vs.glsl" />
     <None Include="normal_mapping_fs.glsl" />
     <None Include="normal_mapping_vs.glsl" />
     <None Include="parallax_mapping_fs.glsl" />

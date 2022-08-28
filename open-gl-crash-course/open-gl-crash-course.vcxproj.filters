@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Parallax Mapping">
       <UniqueIdentifier>{ce9486b1-e979-4e10-95be-dda26cdaf9f8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\HDR">
+      <UniqueIdentifier>{509db3df-39b8-4c08-b74d-bed8bcd0f000}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -94,6 +97,18 @@
     </None>
     <None Include="parallax_mapping_fs.glsl">
       <Filter>Source Files\Parallax Mapping</Filter>
+    </None>
+    <None Include="lighting_vs.glsl">
+      <Filter>Source Files\HDR</Filter>
+    </None>
+    <None Include="lighting_fs.glsl">
+      <Filter>Source Files\HDR</Filter>
+    </None>
+    <None Include="hdr_vs.glsl">
+      <Filter>Source Files\HDR</Filter>
+    </None>
+    <None Include="hdr_fs.glsl">
+      <Filter>Source Files\HDR</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
