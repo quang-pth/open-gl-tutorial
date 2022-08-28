@@ -24,6 +24,7 @@ const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
 // Cursor init position
 float lastX = SCR_WIDTH / 2;
 float lastY = SCR_HEIGHT / 2;
+float heightScale = 0.1f;
 
 // Camera setup
 glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 3.0f);
@@ -33,9 +34,6 @@ bool firstMouse = true;
 
 float deltaTime = 0.0f; // time between current frame and last frame
 float lastFrame = 0.0f; // time of the last frame
-
-// VAO
-unsigned int planeVAO;
 
 // Lighting mode
 bool gamma = false;
@@ -82,14 +80,16 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 
-	Shader shader("normal_mapping_vs.glsl", "normal_mapping_fs.glsl");
+	Shader shader("parallax_mapping_vs.glsl", "parallax_mapping_fs.glsl");
 
-	unsigned int diffuseMap = generateTexture("Textures/brickwall.jpg", false);
-	unsigned int normalMap = generateTexture("Textures/brickwall_normal.jpg", false);
+	unsigned int diffuseMap = generateTexture("Textures/wood.png", false);
+	unsigned int normalMap = generateTexture("Textures/toy_box_normal.png", false);
+	unsigned int depthMap = generateTexture("Textures/toy_box_disp.png", false);
 	
 	shader.use();
 	shader.setInt("diffuseMap", 0);
 	shader.setInt("normalMap", 1);
+	shader.setInt("depthMap", 2);
 
 	glm::vec3 lightPos(0.5f, 1.0f, 0.3f);
 
@@ -112,22 +112,25 @@ int main() {
 		shader.setMat4("view", view);
 		// Render normal-mapped quad
 		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0f, 0.0, 1.0f)));
+		//model = glm::rotate(model, glm::radians((float)glfwGetTime() * -10.0f), glm::normalize(glm::vec3(1.0f, 0.0, 1.0f)));
 		shader.setMat4("model", model);
 		shader.setVec3("viewPos", camera.Position);
 		shader.setVec3("lightPos", lightPos);
+		shader.setFloat("heightScale", heightScale);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMap);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalMap);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, depthMap);
 		renderQuad();
 
 		// Render light source
-		/*model = glm::mat4(1.0f);
+		model = glm::mat4(1.0f);
 		model = glm::translate(model, lightPos);
-		model = glm::scale(model, glm::vec3(0.5f));
+		model = glm::scale(model, glm::vec3(0.1f));
 		shader.setMat4("model", model);
-		renderQuad();*/
+		renderQuad();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -273,13 +276,19 @@ void processInput(GLFWwindow* window) {
 		END Control Camera
 	=============================================
 	*/
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && !keyIsPressed) {
-		gamma = !gamma;
-		keyIsPressed = true;
+	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		if (heightScale > 0.0f)
+			heightScale -= 0.0005f;
+		else
+			heightScale = 0.0f;
 	}
-
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_RELEASE) {
-		keyIsPressed = false;
+	else if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		if (heightScale < 1.0f)
+			heightScale += 0.0005f;
+		else
+			heightScale = 1.0f;
 	}
 }
 
