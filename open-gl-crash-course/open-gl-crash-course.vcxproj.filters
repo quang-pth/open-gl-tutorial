@@ -28,6 +28,9 @@
     <Filter Include="Source Files\HDR">
       <UniqueIdentifier>{509db3df-39b8-4c08-b74d-bed8bcd0f000}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Bloom">
+      <UniqueIdentifier>{7959b05e-ea86-4f05-bc6a-6deffd3f27ea}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -109,6 +112,27 @@
     </None>
     <None Include="hdr_fs.glsl">
       <Filter>Source Files\HDR</Filter>
+    </None>
+    <None Include="light_box_fs.glsl">
+      <Filter>Source Files\Bloom</Filter>
+    </None>
+    <None Include="blur_vs.glsl">
+      <Filter>Source Files\Bloom</Filter>
+    </None>
+    <None Include="blur_fs.glsl">
+      <Filter>Source Files\Bloom</Filter>
+    </None>
+    <None Include="bloom_vs.glsl">
+      <Filter>Source Files\Bloom</Filter>
+    </None>
+    <None Include="bloom_fs.glsl">
+      <Filter>Source Files\Bloom</Filter>
+    </None>
+    <None Include="bloom_final_vs.glsl">
+      <Filter>Source Files\Bloom</Filter>
+    </None>
+    <None Include="bloom_final_fs.glsl">
+      <Filter>Source Files\Bloom</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
