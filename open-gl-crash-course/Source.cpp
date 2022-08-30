@@ -76,89 +76,17 @@ int main() {
 	// configure global opengl state
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
-	
-	// Light source shader
-	Shader pointLightShader("LightSourceVertexShader.glsl", "LightSourceFragmentShader.glsl");
-	// Model shader
-	Shader modelShader("model_loading_vertex.glsl", "model_loading_fragment.glsl");
-	Model ourModel("resources/objects/backpack/backpack.obj");
 
-	float vertices[] = {
-		// positions          // normals           // texture coords
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f,  0.0f,
+	// Build shaders
+	Shader shaderGeometryPass("g_buffer_vs.glsl", "g_buffer_fs.glsl");
+	Shader shaderLightPass("deferred_shading_vs.glsl", "deferred_shading_fs.glsl");
+	Shader shaderLightBox("deferred_light_box_vs.glsl", "deferred_light_box_fs.glsl");
 
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  1.0f,  1.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f,  0.0f,  1.0f,  0.0f,  0.0f,
-
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		-0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f,  0.0f,
-
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f,  1.0f,
-
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f,
-		 0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  1.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		 0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f,  0.0f,
-		-0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  0.0f,
-		-0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f,  1.0f
-	};
-
-	// point light's positions
-	glm::vec3 pointLightPositions[] = {
-		glm::vec3(3.0f, 0.5f, 3.0f),
-		glm::vec3(3.0f, 0.5f, -3.0f),
-		glm::vec3(-3.0f, 0.5f, -3.0f),
-		glm::vec3(-3.0f, 0.5f, 3.0f)
-	};
-	// point light's colors
-	glm::vec3 pointLightColors[] = {
-		glm::vec3(.3f, .0f, 1.0f),
-		glm::vec3(.9f, .1f, .12f),
-		glm::vec3(.01f, .022f, .54f),
-		glm::vec3(.2f, 1.0f, .0f),
-	};
-
-	// Light Source
-	unsigned int lightVAO, lightVBO;
-	glGenVertexArrays(1, &lightVAO);
-	glGenBuffers(1, &lightVBO);
-	glBindVertexArray(lightVAO);
-	// config VBO
-	glBindBuffer(GL_ARRAY_BUFFER, lightVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-	// light source vertex position
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
-	// unbind vbo and vao
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
-	glBindVertexArray(0);
+	// Shader Config
+	// -------------
 	
 
+	
 	// Render loop
 	while(!glfwWindowShouldClose(window)) {
 		float currentFrame = glfwGetTime();
@@ -166,62 +94,88 @@ int main() {
 
 		// Close GLFW when pressing Escape key
 		processInput(window);
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		// Clear color of the previous frame on the buffer
-		glClearColor(0.1f, 0.1f, 0.1, 1.0f); // state-setting function
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT /*clear depth info of the previous frame on the buffer*/); // state-using function
-		
-		// view/projection transformations
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-		glm::mat4 view = camera.GetViewMatrix();
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
-		model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
-		
-		modelShader.use();
-		modelShader.setMat4("projection", projection);
-		modelShader.setMat4("view", view);
-		modelShader.setMat4("model", model);
-		// Set directional light
-		glm::vec3 lightProperties[] = {
-			glm::vec3(0.3f, 0.3f, 0.3f), // ambient
-			glm::vec3(1.0f, 1.0f, 1.0f), // diffuse
-			glm::vec3(1.0f, 1.0f, 1.0f), // specular
-		};
-		modelShader.setVec3("dirLight.direction", -0.2f, -1.0f, -0.3f);
-		modelShader.setVec3("dirLight.ambient", lightProperties[0]);
-		modelShader.setVec3("dirLight.diffuse", lightProperties[1]);
-		modelShader.setVec3("dirLight.specular", lightProperties[2]);
-		// Set light points
-		float sinFactor = sin(glfwGetTime());
-		float cosFactor = cos(glfwGetTime());
-		for (unsigned int i = 0; i < 4; i++) {
-			// Move the light point
-			glm::vec3 newPos = glm::vec3(pointLightPositions[i].x * sinFactor, pointLightPositions[i].y * sinFactor * cosFactor, pointLightPositions[i].z * cosFactor);
-			setPointLight(modelShader, i, newPos, pointLightColors[i]);
+
+		std::cout << "bloom: " << (bloom ? "on" : "off") << "| exposure: " << exposure << std::endl;
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-2.0f, 1.0f, -3.0));
+		model = glm::rotate(model, glm::radians(124.0f), glm::normalize(glm::vec3(1.0, 0.0, 1.0)));
+		shader.setMat4("model", model);
+		renderCube();
+
+		model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(-3.0f, 0.0f, 0.0));
+		model = glm::scale(model, glm::vec3(0.5f));
+		shader.setMat4("model", model);
+		renderCube();
+
+		// finally show all the light sources as bright cubes
+		shaderLight.use();
+		shaderLight.setMat4("projection", projection);
+		shaderLight.setMat4("view", view);
+
+		for (unsigned int i = 0; i < lightPositions.size(); i++)
+		{
+			model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(lightPositions[i]));
+			model = glm::scale(model, glm::vec3(0.25f));
+			shaderLight.setMat4("model", model);
+			shaderLight.setVec3("lightColor", lightColors[i]);
+			renderCube();
+		}
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// 2. blur bright fragments with two-pass Gaussian Blur 
+		// --------------------------------------------------
+		bool horizontal = true, first_iteration = true;
+		unsigned int amount = 10;
+		shaderBlur.use();
+		for (unsigned int i = 0; i < amount; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+			shaderBlur.setInt("horizontal", horizontal);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+			renderQuad();
+			horizontal = !horizontal;
+			if (first_iteration)
+				first_iteration = false;
 		}
 		
-		// render the loaded model
-		ourModel.Draw(modelShader);
+		// TEST BLURRED BRIGHT SCENE
+		/*glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		horizontal = true; 
+		first_iteration = true;
+		amount = 10;
+		shaderBlur.use();
+		for (unsigned int i = 0; i < amount; i++)
+		{
+			shaderBlur.setInt("horizontal", horizontal);
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);  
+			renderQuad();
+			horizontal = !horizontal;
+		}*/
 
-		// Light Source Cube
-		pointLightShader.use();
-		pointLightShader.setMat4("view", view);
-		pointLightShader.setMat4("projection", projection);
-		// Render 4 light points
-		glBindVertexArray(lightVAO);
-		for (unsigned int i = 0; i < 4; i++) {
-			glm::mat4 lightModel = glm::mat4(1.0f);
-			glm::vec3 newPos = glm::vec3(pointLightPositions[i].x * sinFactor, pointLightPositions[i].y * sinFactor * cosFactor, pointLightPositions[i].z * cosFactor);
-			lightModel = glm::translate(lightModel, newPos);
-			lightModel = glm::scale(lightModel, glm::vec3(1.0f, 1.0f, 1.0f));
-			pointLightShader.setMat4("model", lightModel);
-			// set light cube color
-			pointLightShader.setVec3("color", pointLightColors[i]);
-			// Draw light cube
-			glDrawArrays(GL_TRIANGLES, 0, 36);
-		}
-		glBindVertexArray(0);
+		// 3. now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
+		// --------------------------------------------------------------------------------------------------------------------------
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		shaderBloomFinal.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, colorBuffers[0] /*normal scene with HDR color buffer*/);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal] /*blurred bright color buffer*/);
+		shaderBloomFinal.setInt("bloom", bloom);
+		shaderBloomFinal.setFloat("exposure", exposure);
+		renderQuad();
+
+		std::cout << "bloom: " << (bloom ? "on" : "off") << "| exposure: " << exposure << std::endl;
 
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
