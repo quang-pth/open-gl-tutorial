@@ -59,20 +59,18 @@ public:
 			string number;
 			string name = textures[i].type;
 
-			if (name == "diffuse_texture") {
+			if (name == "texture_diffuse") {
 				number = to_string(diffuseNr++);
 			}
-			else if (name == "specular_texture") {
+			else if (name == "texture_specular") {
 				number = to_string(specularNr++);
 			}
 			else if (name == "texture_normal") {
 				number = to_string(normalNr++);
 			}
 			
-			// Set texture (stored in material) sampler
-			shader.setFloat(("material." + name + number).c_str(), i);
-			// Set material shininess
-			shader.setFloat(("material.shininess" + number).c_str(), textures[i].shininess);
+			shader.setFloat((name + number).c_str(), i);
+			//shader.setFloat((number).c_str(), textures[i].shininess);
 			glBindTexture(GL_TEXTURE_2D, textures[i].id);
 		}
 

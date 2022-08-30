@@ -100,10 +100,10 @@ private:
 		if (mesh->mMaterialIndex >= 0) {
 			aiMaterial *meshMaterial = scene->mMaterials[mesh->mMaterialIndex];
 			// Retrieve the diffuse maps
-			vector<Texture> diffuseMaps = loadMaterialTextures(meshMaterial, aiTextureType_DIFFUSE, "diffuse_texture");
+			vector<Texture> diffuseMaps = loadMaterialTextures(meshMaterial, aiTextureType_DIFFUSE, "texture_diffuse");
 			textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
 			// Retrieve the specular maps
-			vector<Texture> specularMaps = loadMaterialTextures(meshMaterial, aiTextureType_SPECULAR, "specular_texture");
+			vector<Texture> specularMaps = loadMaterialTextures(meshMaterial, aiTextureType_SPECULAR, "texture_specular");
 			textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
 			// Retrieve the normal maps
 			vector<Texture> normalMaps = loadMaterialTextures(meshMaterial, aiTextureType_NORMALS, "texture_normal");

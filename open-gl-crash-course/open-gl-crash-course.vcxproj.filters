@@ -25,6 +25,9 @@
     <Filter Include="Source Files\Misc">
       <UniqueIdentifier>{139de2b9-ab95-41a2-94a9-53e1df199254}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Deferred Shading">
+      <UniqueIdentifier>{647948e1-e186-4ca2-89f4-921280a3faca}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -67,6 +70,24 @@
     </None>
     <None Include="VertexShader.glsl">
       <Filter>Source Files\Cubes</Filter>
+    </None>
+    <None Include="deferred_light_box_vs.glsl">
+      <Filter>Source Files\Deferred Shading</Filter>
+    </None>
+    <None Include="deferred_light_box_fs.glsl">
+      <Filter>Source Files\Deferred Shading</Filter>
+    </None>
+    <None Include="g_buffer_vs.glsl">
+      <Filter>Source Files\Deferred Shading</Filter>
+    </None>
+    <None Include="g_buffer_fs.glsl">
+      <Filter>Source Files\Deferred Shading</Filter>
+    </None>
+    <None Include="deferred_shading_vs.glsl">
+      <Filter>Source Files\Deferred Shading</Filter>
+    </None>
+    <None Include="deferred_shading_fs.glsl">
+      <Filter>Source Files\Deferred Shading</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
