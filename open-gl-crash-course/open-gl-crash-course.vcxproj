@@ -149,16 +149,29 @@
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="model.cpp" />
     <ClCompile Include="rbo.cpp" />
+    <ClCompile Include="settings.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="stb_image.cpp" />
     <ClCompile Include="texture_buffer.cpp" />
+    <ClCompile Include="utils.cpp" />
     <ClCompile Include="vao.cpp" />
     <ClCompile Include="vbo.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="blue-fs.glsl" />
+    <None Include="fs.glsl" />
+    <None Include="green-fs.glsl" />
+    <None Include="gs.glsl" />
+    <None Include="model-fs.glsl" />
+    <None Include="model-gs.glsl" />
+    <None Include="model-vs.glsl" />
+    <None Include="red-fs.glsl" />
+    <None Include="common-vs.glsl" />
     <None Include="blending-fragment.glsl" />
     <None Include="blending-vertex.glsl" />
+    <None Include="cubemap-fs.glsl" />
+    <None Include="cubemap-vs.glsl" />
     <None Include="depth-test-fragment.glsl" />
     <None Include="depth-test-vertex.glsl" />
     <None Include="FragmentShader.glsl" />
@@ -170,7 +183,11 @@
     <None Include="model_loading_vertex.glsl" />
     <None Include="screen-framebuffer-fs.glsl" />
     <None Include="screen-framebuffer-vs.glsl" />
+    <None Include="skybox-fs.glsl" />
+    <None Include="skybox-vs.glsl" />
     <None Include="VertexShader.glsl" />
+    <None Include="vs.glsl" />
+    <None Include="yellow-fs.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="camera.h" />
@@ -179,9 +196,11 @@
     <ClInclude Include="mesh.h" />
     <ClInclude Include="model.h" />
     <ClInclude Include="rbo.h" />
+    <ClInclude Include="settings.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="stb_image.h" />
     <ClInclude Include="texture_buffer.h" />
+    <ClInclude Include="utils.h" />
     <ClInclude Include="vao.h" />
     <ClInclude Include="vbo.h" />
   </ItemGroup>

@@ -39,7 +39,9 @@ public:
 	vector<Texture> textures;
 
 	// Method definition
-	Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) {
+	Mesh(const vector<Vertex>& vertices, const vector<unsigned int>& indices, 
+		const vector<Texture>& textures) 
+	{
 		this->vertices = vertices;
 		this->indices = indices;
 		this->textures = textures;
@@ -47,7 +49,7 @@ public:
 		this->setUpMesh();
 	}
 
-	void Draw(Shader& shader) {
+	void Draw(const Shader& shader) {
 		unsigned int diffuseNr = 1;
 		unsigned int specularNr = 1;
 		unsigned int normalNr = 1;

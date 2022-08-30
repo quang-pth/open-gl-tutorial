@@ -8,10 +8,11 @@ VAO::VAO()
 }
 
 // Links a VBO Attribute such as a position or color to the VAO
-void VAO::linkAttrib(VBO& vbo, GLuint location, GLuint numberOfComponent, GLenum componentType, GLsizeiptr stride, void* offset)
+void VAO::linkAttrib(VBO& vbo, const GLuint& location, const GLuint& numberOfComponent, 
+	const GLenum& componentType, const GLboolean& normalized, GLsizeiptr stride, void* offset)
 {
 	vbo.bind();
-	glVertexAttribPointer(location, numberOfComponent, componentType, GL_FALSE, stride, offset);
+	glVertexAttribPointer(location, numberOfComponent, componentType, normalized, stride, offset);
 	glEnableVertexAttribArray(location);
 	vbo.unbind();
 }
@@ -22,9 +23,15 @@ void VAO::bind()
 	glBindVertexArray(vaoID);
 }
 
-void VAO::linkTexture(GLenum target, GLenum texture, unsigned int textureData) {
+void VAO::linkTexture(const GLenum& target, const GLenum& texture, const unsigned int& textureData) {
 	glActiveTexture(texture);
 	glBindTexture(target, textureData);
+}
+
+void VAO::drawArrays(const GLenum& target, const int& first, const int& count) {
+	this->bind();
+	glDrawArrays(target, first, count);
+	this->unbind();
 }
 
 // Unbinds the VAO
