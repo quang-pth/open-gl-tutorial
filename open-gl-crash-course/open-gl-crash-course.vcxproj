@@ -162,6 +162,12 @@
     <None Include="LightSourceVertexShader.glsl" />
     <None Include="model_loading_fragment.glsl" />
     <None Include="model_loading_vertex.glsl" />
+    <None Include="ssao_blur_fs.glsl" />
+    <None Include="ssao_fs.glsl" />
+    <None Include="ssao_geometry_fs.glsl" />
+    <None Include="ssao_geometry_vs.glsl" />
+    <None Include="ssao_lighting_fs.glsl" />
+    <None Include="ssao_vs.glsl" />
     <None Include="VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
