@@ -31,6 +31,9 @@
     <Filter Include="Source Files\SSAO">
       <UniqueIdentifier>{eb12859d-3be7-4f05-a349-945427436980}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Lighting">
+      <UniqueIdentifier>{70d2cada-c807-480c-ac64-04bbedc14ffb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -109,6 +112,12 @@
     </None>
     <None Include="ssao_blur_fs.glsl">
       <Filter>Source Files\SSAO</Filter>
+    </None>
+    <None Include="pbr_vs.glsl">
+      <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="pbr_fs.glsl">
+      <Filter>Source Files\Lighting</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
