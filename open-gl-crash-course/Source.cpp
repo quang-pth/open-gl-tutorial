@@ -81,10 +81,22 @@ int main() {
 	// Shader
 	Shader pbrShader("pbr_vs.glsl", "pbr_fs.glsl");
 
+	// Textures
+	unsigned int albedoMap = loadTexture("Textures/albedo.png");
+	unsigned int normalMap = loadTexture("Textures/normal.png");
+	unsigned int metallicMap = loadTexture("Textures/metallic.png");
+	unsigned int roughnessMap = loadTexture("Textures/roughness.png");
+	unsigned int aoMap = loadTexture("Textures/ao.png");
+
 	// Shader's uniform config
 	pbrShader.use();
-	pbrShader.setVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
-	pbrShader.setFloat("ao", 1.0f);
+	/*pbrShader.setVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
+	pbrShader.setFloat("ao", 1.0f);*/
+	pbrShader.setInt("albedoMap", 0);
+	pbrShader.setInt("normalMap", 1);
+	pbrShader.setInt("metallicMap", 2);
+	pbrShader.setInt("roughnessMap", 3);
+	pbrShader.setInt("aoMap", 4);
 
 	// Lights
 	glm::vec3 lightPositions[] = {
@@ -123,14 +135,19 @@ int main() {
 		pbrShader.use();
 		pbrShader.setMat4("view", view);
 		pbrShader.setVec3("cameraPos", camera.Position);
-
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, albedoMap);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, normalMap);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, metallicMap);
+		glActiveTexture(GL_TEXTURE3);
+		glBindTexture(GL_TEXTURE_2D, roughnessMap);
+		glActiveTexture(GL_TEXTURE4);
+		glBindTexture(GL_TEXTURE_2D, aoMap);
 		// Render spheres
 		for (unsigned int row = 0; row < nrRows; row++) {
-			// Metallic intensity increase top to botom
-			pbrShader.setFloat("metallic", (float)row / (float)nrRows);
 			for (unsigned int col = 0; col < nrColumns; col++) {
-				// Roughness increase top to botom
-				pbrShader.setFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
 				model = glm::mat4(1.0f);
 				model = glm::translate(model, glm::vec3(
 					col * spacing,
