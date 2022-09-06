@@ -151,6 +151,8 @@
     <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cubemap_fs.glsl" />
+    <None Include="cubemap_vs.glsl" />
     <None Include="deferred_light_box_fs.glsl" />
     <None Include="deferred_light_box_vs.glsl" />
     <None Include="deferred_shading_fs.glsl" />
@@ -164,6 +166,8 @@
     <None Include="model_loading_vertex.glsl" />
     <None Include="pbr_fs.glsl" />
     <None Include="pbr_vs.glsl" />
+    <None Include="skybox_fs.glsl" />
+    <None Include="skybox_vs.glsl" />
     <None Include="ssao_blur_fs.glsl" />
     <None Include="ssao_fs.glsl" />
     <None Include="ssao_geometry_fs.glsl" />

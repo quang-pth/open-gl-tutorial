@@ -34,6 +34,9 @@
     <Filter Include="Source Files\Lighting">
       <UniqueIdentifier>{70d2cada-c807-480c-ac64-04bbedc14ffb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Diffuse Irrediance">
+      <UniqueIdentifier>{30659262-af4e-4b07-869e-45c51a421f0b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -118,6 +121,18 @@
     </None>
     <None Include="pbr_fs.glsl">
       <Filter>Source Files\Lighting</Filter>
+    </None>
+    <None Include="cubemap_vs.glsl">
+      <Filter>Source Files\Diffuse Irrediance</Filter>
+    </None>
+    <None Include="cubemap_fs.glsl">
+      <Filter>Source Files\Diffuse Irrediance</Filter>
+    </None>
+    <None Include="skybox_vs.glsl">
+      <Filter>Source Files\Diffuse Irrediance</Filter>
+    </None>
+    <None Include="skybox_fs.glsl">
+      <Filter>Source Files\Diffuse Irrediance</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
