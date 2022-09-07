@@ -134,6 +134,12 @@
     <None Include="skybox_fs.glsl">
       <Filter>Source Files\Diffuse Irrediance</Filter>
     </None>
+    <None Include="irrediance_map_vs.glsl">
+      <Filter>Source Files\Diffuse Irrediance</Filter>
+    </None>
+    <None Include="irrediance_map_fs.glsl">
+      <Filter>Source Files\Diffuse Irrediance</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">

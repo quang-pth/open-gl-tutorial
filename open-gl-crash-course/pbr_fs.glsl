@@ -18,9 +18,11 @@ uniform float ao; // amibient occlusion
 uniform vec3 lightPositions[NR_POINT_LIGHTS];
 uniform vec3 lightColors[NR_POINT_LIGHTS];
 
+uniform samplerCube irradianceMap;
+
 // Reflection at different angles
-vec3 FresnelSchlick(float costTheta, vec3 F0 /*base reflectivity*/) {
-	return F0 + (1.0 - F0) * pow(1.0 - costTheta, 5.0);
+vec3 FresnelSchlick(float cosTheta, vec3 F0 /*base reflectivity*/, float roughness) {
+	return F0 + (max(vec3(1.0 - roughness), F0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 // The area of microfacets that aligned with the Halfway vector
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
@@ -60,6 +62,9 @@ void main() {
 	vec3 V = normalize(cameraPos - WorldPos); // View direction
 	// Reflection radiance
 	vec3 Lo = vec3(0.0);
+	vec3 F0 = vec3(0.04); // as a non-metallic surface
+	F0 = mix(F0, albedo, metallic); // interpolate with the albedo color if metallic surface
+	// PBR (Physics-based Rendering)
 	for (int i = 0; i < NR_POINT_LIGHTS; i++) {
 		vec3 L = normalize(lightPositions[i] - WorldPos); // Light direction
 		vec3 H = normalize(L + V); // halfway vector
@@ -68,9 +73,7 @@ void main() {
 		float attenuation = 1.0 / (d * d);
 		vec3 radiance = lightColors[i] * attenuation;
 		// F in DFG in term of PBR
-		vec3 F0 = vec3(0.04); // as a non-metallic surface
-		F0 = mix(F0, albedo, metallic); // interpolate with the albedo color if metallic surface
-		vec3 F = FresnelSchlick(max(dot(V, H), 0.0), F0);
+		vec3 F = FresnelSchlick(max(dot(V, H), 0.0), F0, roughness);
 		// D in DFG in term of PBR
 		float NDF = DistributionGGX(N, H, roughness);
 		// G in DFG in term of PBR
@@ -78,17 +81,25 @@ void main() {
 		// Cook-Torance BRDF
 		vec3 numerator = NDF * G * F;
 		float denominator = 4 * max(dot(V, N), 0.0) * max(dot(L, N), 0.0);
-		vec3 specular = numerator / max(denominator, 0.001) /*prevent division by zero*/;
+		vec3 specular = numerator / max(denominator, 0.0001) /*prevent division by zero*/;
 
 		vec3 kS = F;
 		vec3 kD = vec3(1.0) - kS;
 		kD *= 1.0 - metallic; // nullify kD if surface is metallic - metallic not refract the light
-		
+
 		float NdotL = max(dot(N, L), 0.0);
 		Lo += (kD * albedo / PI + specular) * radiance * NdotL;
 	}
+	
+	// Ambient Lighting (IBL)
+	vec3 kS = FresnelSchlick(max(dot(V, N), 0.0), F0, roughness);
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - metallic;
 
-	vec3 ambient = vec3(0.03) * albedo * ao;
+	vec3 irradiance = texture(irradianceMap, N).rgb;
+	vec3 diffuse = irradiance * albedo;
+	vec3 ambient = (kD * diffuse) * ao;
+
 	vec3 color = ambient + Lo;
 	// HDR capture
 	color = color / (color + vec3(1.0));

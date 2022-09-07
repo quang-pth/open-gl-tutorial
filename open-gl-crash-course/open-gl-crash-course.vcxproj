@@ -160,6 +160,8 @@
     <None Include="FragmentShader.glsl" />
     <None Include="g_buffer_fs.glsl" />
     <None Include="g_buffer_vs.glsl" />
+    <None Include="irrediance_map_fs.glsl" />
+    <None Include="irrediance_map_vs.glsl" />
     <None Include="LightSourceFragmentShader.glsl" />
     <None Include="LightSourceVertexShader.glsl" />
     <None Include="model_loading_fragment.glsl" />
