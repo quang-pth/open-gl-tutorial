@@ -37,6 +37,9 @@
     <Filter Include="Source Files\Diffuse Irrediance">
       <UniqueIdentifier>{30659262-af4e-4b07-869e-45c51a421f0b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Specular LBL">
+      <UniqueIdentifier>{55328993-caa0-4157-8ff0-fa702888c0ec}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -139,6 +142,12 @@
     </None>
     <None Include="irrediance_map_fs.glsl">
       <Filter>Source Files\Diffuse Irrediance</Filter>
+    </None>
+    <None Include="prefiltered_map_vs.glsl">
+      <Filter>Source Files\Specular LBL</Filter>
+    </None>
+    <None Include="prefiltered_map_fs.glsl">
+      <Filter>Source Files\Specular LBL</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

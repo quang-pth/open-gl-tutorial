@@ -168,6 +168,8 @@
     <None Include="model_loading_vertex.glsl" />
     <None Include="pbr_fs.glsl" />
     <None Include="pbr_vs.glsl" />
+    <None Include="prefiltered_map_fs.glsl" />
+    <None Include="prefiltered_map_vs.glsl" />
     <None Include="skybox_fs.glsl" />
     <None Include="skybox_vs.glsl" />
     <None Include="ssao_blur_fs.glsl" />

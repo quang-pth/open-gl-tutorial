@@ -29,6 +29,8 @@ const unsigned int CUBEMAP_WIDTH = 512;
 const unsigned int CUBEMAP_HEIGHT = 512;
 const unsigned int IRREDIANCE_MAP_WIDTH = 32;
 const unsigned int IRREDIANCE_MAP_HEIGHT = 32;
+const unsigned int PRE_FILTERED_ENV_MAP_WIDTH = 128;
+const unsigned int PRE_FILTERED_ENV_MAP_HEIGHT = 128;
 
 // Cursor init position
 float lastX = SCR_WIDTH / 2;
@@ -108,6 +110,7 @@ int main() {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Equirectangular map
@@ -115,10 +118,11 @@ int main() {
 	//unsigned int hdrTexture = loadHdrTexture("Textures/Milkyway/Milkyway_Small.hdr");
 
 	// Shader
-	Shader pbrShader("pbr_vs.glsl", "pbr_fs.glsl");
-	Shader cubemapShader("cubemap_vs.glsl", "cubemap_fs.glsl");
-	Shader skyboxShader("skybox_vs.glsl", "skybox_fs.glsl");
-	Shader irredianceShader("irrediance_map_vs.glsl", "irrediance_map_fs.glsl");
+	Shader pbrShader("pbr_vs.glsl", "pbr_fs.glsl"); // Render PBR scene
+	Shader cubemapShader("cubemap_vs.glsl", "cubemap_fs.glsl"); // Convert HDR image to Cubemap texture
+	Shader skyboxShader("skybox_vs.glsl", "skybox_fs.glsl"); // Render Skybox 
+	Shader irredianceShader("irrediance_map_vs.glsl", "irrediance_map_fs.glsl"); // Pre-compute the lighting map IBL
+	Shader prefilteredShader("prefiltered_map_vs.glsl", "prefiltered_map_fs.glsl"); // Pre-filter the lighting map IBL
 
 	// Converting HDR image to cubemap texture
 	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
@@ -175,14 +179,57 @@ int main() {
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 
-		IRREDIANCE_MAP_WIDTH, IRREDIANCE_MAP_HEIGHT);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, IRREDIANCE_MAP_WIDTH, 
+		IRREDIANCE_MAP_HEIGHT);
 	for (unsigned int i = 0; i < 6; i++) {
 		irredianceShader.setMat4("view", captureViews[i]);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
 			GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, irredianceCubemap, 0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		renderCube();
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// Pre-filtered environment map
+	unsigned int prefilterMap;
+	glGenTextures(1, &prefilterMap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+	for (unsigned int i = 0; i < 6; ++i)
+	{
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F /*each face is an HDR texture image*/,
+			PRE_FILTERED_ENV_MAP_WIDTH, PRE_FILTERED_ENV_MAP_HEIGHT, 0, GL_RGB, GL_FLOAT, nullptr);
+	}
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR /*trilinear filtering*/);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	prefilteredShader.use();
+	prefilteredShader.setMat4("projection", captureProjection);
+	prefilteredShader.setInt("envMap", 0);
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	unsigned int mipMapLevel = 5;
+	for (unsigned int mip = 0; mip < mipMapLevel; mip++) 
+	{
+		unsigned int mipWidth = PRE_FILTERED_ENV_MAP_WIDTH * std::pow(0.5, mip);
+		unsigned int mipHeight = PRE_FILTERED_ENV_MAP_HEIGHT * std::pow(0.5, mip);
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
+		glViewport(0, 0, mipWidth, mipHeight);
+
+		float roughness = (float)mip / (float)(mip - 1);
+		prefilteredShader.setFloat("roughness", roughness);
+		for (unsigned int i = 0; i < 6; i++) {
+			prefilteredShader.setMat4("view", captureViews[i]);
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
+				GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, prefilterMap, mip);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			renderCube();
+		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
@@ -271,12 +318,9 @@ int main() {
 		skyboxShader.use();
 		skyboxShader.setMat4("view", view);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 		renderCube();
-
-		/*irredianceShader.use();
-		irredianceShader.setMat4("view", view);*/
-
+		
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();

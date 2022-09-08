@@ -8,7 +8,7 @@ out vec4 FragColor;
 uniform samplerCube environmentMap;
 
 void main() {
-	vec3 envColor = texture(environmentMap, localPosition).rgb;
+	vec3 envColor = texture(environmentMap, localPosition, 1.2).rgb;
 	// HDR capture
 	envColor = envColor / (envColor + vec3(1.0));
 	// Gamma correction
