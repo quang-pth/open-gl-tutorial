@@ -112,10 +112,11 @@ int main() {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
 	// Equirectangular map
-	unsigned int hdrTexture = loadHdrTexture("Textures/Helipad_Afternoon/LA_Downtown_Afternoon_Fishing_3k.hdr");
-	//unsigned int hdrTexture = loadHdrTexture("Textures/Milkyway/Milkyway_Small.hdr");
+	//unsigned int hdrTexture = loadHdrTexture("Textures/Helipad_Afternoon/LA_Downtown_Afternoon_Fishing_3k.hdr");
+	unsigned int hdrTexture = loadHdrTexture("Textures/Milkyway/Milkyway_Small.hdr");
 
 	// Shader
 	Shader pbrShader("pbr_vs.glsl", "pbr_fs.glsl"); // Render PBR scene
@@ -177,10 +178,10 @@ int main() {
 	irredianceShader.setInt("environmentMap", 0);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glViewport(0, 0, IRREDIANCE_MAP_WIDTH, IRREDIANCE_MAP_HEIGHT);
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
 	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, IRREDIANCE_MAP_WIDTH, 
-		IRREDIANCE_MAP_HEIGHT);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, IRREDIANCE_MAP_WIDTH, IRREDIANCE_MAP_HEIGHT);
 	for (unsigned int i = 0; i < 6; i++) {
 		irredianceShader.setMat4("view", captureViews[i]);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, 
@@ -205,23 +206,23 @@ int main() {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR /*trilinear filtering*/);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+	
 	prefilteredShader.use();
-	prefilteredShader.setMat4("projection", captureProjection);
 	prefilteredShader.setInt("envMap", 0);
+	prefilteredShader.setMat4("projection", captureProjection);
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
-	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
 	unsigned int mipMapLevel = 5;
 	for (unsigned int mip = 0; mip < mipMapLevel; mip++) 
 	{
-		unsigned int mipWidth = PRE_FILTERED_ENV_MAP_WIDTH * std::pow(0.5, mip);
-		unsigned int mipHeight = PRE_FILTERED_ENV_MAP_HEIGHT * std::pow(0.5, mip);
+		unsigned int mipWidth = static_cast<unsigned int>(PRE_FILTERED_ENV_MAP_WIDTH * std::pow(0.5, mip));
+		unsigned int mipHeight = static_cast<unsigned int>(PRE_FILTERED_ENV_MAP_HEIGHT * std::pow(0.5, mip));
+		glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
 		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, mipWidth, mipHeight);
 		glViewport(0, 0, mipWidth, mipHeight);
 
-		float roughness = (float)mip / (float)(mip - 1);
+		float roughness = (float)mip / (float)(mipMapLevel - 1);
 		prefilteredShader.setFloat("roughness", roughness);
 		for (unsigned int i = 0; i < 6; i++) {
 			prefilteredShader.setMat4("view", captureViews[i]);
@@ -243,6 +244,7 @@ int main() {
 	pbrShader.setVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
 	pbrShader.setFloat("ao", 1.0f);
 	pbrShader.setMat4("projection", projection);
+	pbrShader.setInt("irradianceMap", 0);
 	skyboxShader.use();
 	skyboxShader.setMat4("projection", projection);
 	skyboxShader.setInt("environmentMap", 0);
@@ -282,7 +284,8 @@ int main() {
 		pbrShader.use();
 		pbrShader.setMat4("view", view);
 		pbrShader.setVec3("cameraPos", camera.Position);
-
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, irredianceCubemap);
 		// Render spheres
 		for (unsigned int row = 0; row < nrRows; row++) {
 			// Metallic intensity increase top to botom
