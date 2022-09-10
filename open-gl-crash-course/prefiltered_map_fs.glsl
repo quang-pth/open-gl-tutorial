@@ -46,6 +46,17 @@ vec3 ImportanceSampleGGX(vec2 Xi, vec3 N, float roughness)
 	return normalize(sampleVec);
 }
 
+float DistributionGGX(float NdotH, float roughness) {
+	float a = roughness * roughness;
+	float a2 = a * a;
+	float NdotH2 = NdotH * NdotH;
+	float num = a2;
+	float denom = NdotH2 * (a2 - 1.0) + 1.0;
+	denom = PI * pow(denom, 2);
+
+	return num / denom;
+}
+
 void main() 
 {
 	vec3 N = normalize(localPosition);
@@ -63,7 +74,17 @@ void main()
 
 		float NdotL = max(dot(N, L), 0.0);
 		if (NdotL > 0.0) {
-			prefilteredColor += texture(envMap, L).rgb * NdotL;
+			// Sample the environment map with a specified mipmap level
+			float NdotH = max(dot(N, H), 0.0);
+			float HdotV = max(dot(H, V), 0.0);
+			float D = DistributionGGX(NdotH, roughness);
+			float pdf = (D * NdotH / (4.0 * HdotV)) + 0.0001;
+			float resolution = 512.0; // source cubemap perface resolution
+			float saTexel = 4.0 * PI / (6.0 * resolution * resolution);
+			float saSample = 1.0 / (float(SAMPLE_COUNT) * pdf + 0.0001);
+			float mipLevel = roughness == 0.0 ? 0.0 : 0.5 * log2(saSample / saTexel);
+
+			prefilteredColor += textureLod(envMap, L, mipLevel).rgb * NdotL;
 			totalWeight += NdotL;
 		}
 	}

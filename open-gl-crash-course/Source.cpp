@@ -87,6 +87,7 @@ int main() {
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
 	glEnable(GL_MULTISAMPLE);
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
 	// Cubemap capture Framebuffer
 	unsigned int captureFBO, captureRBO;
@@ -108,9 +109,8 @@ int main() {
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR /*Enable mipmap level sampling*/);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
@@ -118,12 +118,59 @@ int main() {
 	//unsigned int hdrTexture = loadHdrTexture("Textures/Helipad_Afternoon/LA_Downtown_Afternoon_Fishing_3k.hdr");
 	unsigned int hdrTexture = loadHdrTexture("Textures/Milkyway/Milkyway_Small.hdr");
 
+	// Bamboo Textures
+	unsigned int bambooAlbedo = loadTexture("Textures/Material/bamboo-wood-semigloss-albedo.png");
+	unsigned int bambooAo = loadTexture("Textures/Material/bamboo-wood-semigloss-ao.png");
+	unsigned int bambooMetallic = loadTexture("Textures/Material/bamboo-wood-semigloss-metal.png");
+	unsigned int bambooNormal = loadTexture("Textures/Material/bamboo-wood-semigloss-normal.png");
+	unsigned int bambooRoughness = loadTexture("Textures/Material/bamboo-wood-semigloss-roughness.png");
+	// Gold Sphere
+	unsigned int pittedMetalAlbedo = loadTexture("Textures/Material/pitted-metal_height.png");
+	unsigned int pittedMetalAo = loadTexture("Textures/Material/pitted-metal_ao.png");
+	unsigned int pittedMetalMetallic = loadTexture("Textures/Material/pitted-metal_metallic.png");
+	unsigned int pittedMetalNormal = loadTexture("Textures/Material/pitted-metal_normal-ogl.png");
+	unsigned int pittedMetalRoughness = loadTexture("Textures/Material/pitted-metal_roughness.png");
+
+	// Maps
+	unsigned int albedoMaps[] = {
+		bambooAlbedo,
+		pittedMetalAlbedo,
+		loadTexture("Textures/Material/gold-scuffed_basecolor-boosted.png"),
+		loadTexture("Textures/Material/gray-granite-flecks-albedo.png"),
+	};
+	unsigned int aoMaps[] = {
+		bambooAo,
+		pittedMetalAo,
+		1.0,
+		loadTexture("Textures/Material/gray-granite-flecks-ao.png"),
+	};
+	unsigned int metallicMaps[] = {
+		bambooMetallic,
+		pittedMetalMetallic,
+		loadTexture("Textures/Material/gold-scuffed_metallic.png"),
+		loadTexture("Textures/Material/gray-granite-flecks-Metallic.psd"),
+	};
+	unsigned int normalMaps[] = {
+		bambooNormal,
+		pittedMetalNormal,
+		loadTexture("Textures/Material/gold-scuffed_normal.png"),
+		loadTexture("Textures/Material/gray-granite-flecks-Normal-ogl.png"),
+	};
+	unsigned int roughnessMaps[] = {
+		bambooRoughness,
+		pittedMetalRoughness,
+		loadTexture("Textures/Material/gold-scuffed_roughness.png"),
+		0.0,
+	};
+
 	// Shader
 	Shader pbrShader("pbr_vs.glsl", "pbr_fs.glsl"); // Render PBR scene
 	Shader cubemapShader("cubemap_vs.glsl", "cubemap_fs.glsl"); // Convert HDR image to Cubemap texture
 	Shader skyboxShader("skybox_vs.glsl", "skybox_fs.glsl"); // Render Skybox 
 	Shader irredianceShader("irrediance_map_vs.glsl", "irrediance_map_fs.glsl"); // Pre-compute the lighting map IBL
 	Shader prefilteredShader("prefiltered_map_vs.glsl", "prefiltered_map_fs.glsl"); // Pre-filter the lighting map IBL
+	Shader brdfShader("brdf_vs.glsl", "brdf_fs.glsl"); // Create BRDF texture
+	Shader texture2DShader("brdf_texture_vs.glsl", "brdf_texture_fs.glsl");
 
 	// Converting HDR image to cubemap texture
 	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
@@ -158,6 +205,10 @@ int main() {
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+	glGenerateMipmap(GL_TEXTURE_CUBE_MAP);
+
 	// Bind Irrediance Map
 	unsigned int irredianceCubemap;
 	glGenTextures(1, &irredianceCubemap);
@@ -233,6 +284,27 @@ int main() {
 		}
 	}
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// BRDF texture
+	unsigned int brdfLUTTexture;
+	glGenTextures(1, &brdfLUTTexture);
+	// pre-allocate enough memory for the LUT texture.
+	glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, CUBEMAP_WIDTH, CUBEMAP_HEIGHT, 0, GL_RG, GL_FLOAT, 0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	// Attach BRDF texture to FBO
+	glBindFramebuffer(GL_FRAMEBUFFER, captureFBO);
+	glBindRenderbuffer(GL_RENDERBUFFER, captureRBO);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, CUBEMAP_WIDTH, CUBEMAP_HEIGHT);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, brdfLUTTexture, 0);
+	glViewport(0, 0, CUBEMAP_WIDTH, CUBEMAP_HEIGHT);
+	brdfShader.use();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	renderQuad();
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
 	// Restore the viewport original size
 	int scrWidth, scrHeight;
@@ -241,13 +313,21 @@ int main() {
 
 	// Shader's uniform config
 	glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);	pbrShader.use();
-	pbrShader.setVec3("albedo", glm::vec3(0.5f, 0.0f, 0.0f));
-	pbrShader.setFloat("ao", 1.0f);
+	pbrShader.use();
+	pbrShader.setInt("albedoMap", 0);
+	pbrShader.setInt("aoMap", 1);
+	pbrShader.setInt("metallicMap", 2);
+	pbrShader.setInt("normalMap", 3);
+	pbrShader.setInt("roughnessMap", 4);
+	pbrShader.setInt("irradianceMap", 5);
+	pbrShader.setInt("prefilteredMap", 6);
+	pbrShader.setInt("brdfLUT", 7);
 	pbrShader.setMat4("projection", projection);
-	pbrShader.setInt("irradianceMap", 0);
 	skyboxShader.use();
 	skyboxShader.setMat4("projection", projection);
 	skyboxShader.setInt("environmentMap", 0);
+	texture2DShader.use();
+	texture2DShader.setInt("brdfTexture", 0);
 
 	// Lights
 	glm::vec3 lightPositions[] = {
@@ -262,8 +342,8 @@ int main() {
 		glm::vec3(300.0f, 300.0f, 300.0f),
 		glm::vec3(300.0f, 300.0f, 300.0f)
 	};
-	unsigned int nrRows = 7;
-	unsigned int nrColumns = 7;
+	unsigned int nrRows = 1;
+	unsigned int nrColumns = sizeof(albedoMaps) / sizeof(albedoMaps[0]);
 	float spacing = 2.5;
 
 	// Render loop
@@ -284,15 +364,40 @@ int main() {
 		pbrShader.use();
 		pbrShader.setMat4("view", view);
 		pbrShader.setVec3("cameraPos", camera.Position);
-		glActiveTexture(GL_TEXTURE0);
+		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, irredianceCubemap);
+		glActiveTexture(GL_TEXTURE6);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+		glActiveTexture(GL_TEXTURE7);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, brdfLUTTexture);
 		// Render spheres
-		for (unsigned int row = 0; row < nrRows; row++) {
-			// Metallic intensity increase top to botom
-			pbrShader.setFloat("metallic", (float)row / (float)nrRows);
+		for (unsigned int row = 0; row < nrRows; row++) 
+		{
 			for (unsigned int col = 0; col < nrColumns; col++) {
-				// Roughness increase top to botom
-				pbrShader.setFloat("roughness", glm::clamp((float)col / (float)nrColumns, 0.05f, 1.0f));
+				if (nrColumns == 2) {
+					pbrShader.setInt("AO", false);
+				}
+				else {
+					pbrShader.setInt("AO", true);
+					glBindTexture(GL_TEXTURE_2D, aoMaps[col]);
+					glActiveTexture(GL_TEXTURE2);
+				}
+
+				if (nrColumns == 3) {
+					pbrShader.setInt("isRoughness", false);
+				}
+				else {
+					pbrShader.setInt("isRoughness", true);
+					glActiveTexture(GL_TEXTURE4);
+					glBindTexture(GL_TEXTURE_2D, roughnessMaps[col]);
+				}
+
+				glActiveTexture(GL_TEXTURE0);
+				glBindTexture(GL_TEXTURE_2D, albedoMaps[col]);
+				glActiveTexture(GL_TEXTURE1);
+				glBindTexture(GL_TEXTURE_2D, metallicMaps[col]);
+				glActiveTexture(GL_TEXTURE3);
+				glBindTexture(GL_TEXTURE_2D, normalMaps[col]);
 				model = glm::mat4(1.0f);
 				model = glm::translate(model, glm::vec3(
 					col * spacing,
@@ -308,6 +413,7 @@ int main() {
 		for (unsigned int i = 0; i < sizeof(lightPositions) / sizeof(lightPositions[0]); ++i)
 		{
 			glm::vec3 newPos = lightPositions[i] + glm::vec3(sin(glfwGetTime() * 3.0) * 4.0, cos(glfwGetTime()) * 3.0, 0.0);
+			//newPos = lightPositions[i];
 			pbrShader.setVec3("lightPositions[" + std::to_string(i) + "]", newPos);
 			pbrShader.setVec3("lightColors[" + std::to_string(i) + "]", lightColors[i]);
 
@@ -321,9 +427,15 @@ int main() {
 		skyboxShader.use();
 		skyboxShader.setMat4("view", view);
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
 		renderCube();
 		
+		
+	/*	texture2DShader.use();
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+		renderQuad();*/
+
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();

@@ -8,17 +8,25 @@ in vec3 Normal;
 
 uniform vec3 cameraPos;
 
-uniform vec3 albedo;
-uniform float metallic;
-uniform float roughness;
-uniform float ao; // amibient occlusion
+uniform sampler2D albedoMap;
+uniform sampler2D aoMap; // amibient occlusion
+uniform sampler2D metallicMap;
+uniform sampler2D normalMap;
+uniform sampler2D roughnessMap;
 
 #define PI 3.14159265359
 #define NR_POINT_LIGHTS 4
+#define MAX_REFLECTION_LOD 4.0 // Max mipmap level
+
 uniform vec3 lightPositions[NR_POINT_LIGHTS];
 uniform vec3 lightColors[NR_POINT_LIGHTS];
 
 uniform samplerCube irradianceMap;
+uniform samplerCube prefilteredMap;
+uniform sampler2D brdfLUT;
+
+uniform bool AO;
+uniform bool isRoughness;
 
 // Reflection at different angles
 vec3 FresnelSchlick(float cosTheta, vec3 F0 /*base reflectivity*/, float roughness) {
@@ -57,9 +65,46 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness) {
 	return ggx1 * ggx2;
 }
 
+vec3 getNormalFromMap()
+{
+    vec3 tangentNormal = texture(normalMap, TexCoords).xyz * 2.0 - 1.0;
+
+    vec3 Q1  = dFdx(WorldPos);
+    vec3 Q2  = dFdy(WorldPos);
+    vec2 st1 = dFdx(TexCoords);
+    vec2 st2 = dFdy(TexCoords);
+
+    vec3 N   = normalize(Normal);
+    vec3 T  = normalize(Q1*st2.t - Q2*st1.t);
+    vec3 B  = -normalize(cross(N, T));
+    mat3 TBN = mat3(T, B, N);
+
+    return normalize(TBN * tangentNormal);
+}
+
 void main() {
-	vec3 N = normalize(Normal);
+	vec3 N = getNormalFromMap();
+	vec3 albedo = pow(texture(albedoMap, TexCoords).rgb, vec3(2.2));
+	float metallic = texture(metallicMap, TexCoords).r;
+	
+	float roughness; 
+	if (isRoughness) {
+		roughness = texture(roughnessMap, TexCoords).r;
+	}
+	else {
+		roughness = 0.0;
+	}
+	
+	float ao;
+	if (AO == true) {
+		ao = texture(aoMap, TexCoords).r;
+	}
+	else {
+		ao = 1.0;
+	}
+
 	vec3 V = normalize(cameraPos - WorldPos); // View direction
+	vec3 R = reflect(-V, N);
 	// Reflection radiance
 	vec3 Lo = vec3(0.0);
 	vec3 F0 = vec3(0.04); // as a non-metallic surface
@@ -92,13 +137,20 @@ void main() {
 	}
 	
 	// Ambient Lighting (IBL)
-	vec3 kS = FresnelSchlick(max(dot(V, N), 0.0), F0, roughness);
+	vec3 F = FresnelSchlick(max(dot(V, N), 0.0), F0, roughness);
+	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
 	kD *= 1.0 - metallic;
 
 	vec3 irradiance = texture(irradianceMap, N).rgb;
 	vec3 diffuse = irradiance * albedo;
-	vec3 ambient = (kD * diffuse) * ao;
+
+	// Apply Specular Lighting with BRDF
+	vec3 prefilteredColor = textureLod(prefilteredMap, R, roughness * MAX_REFLECTION_LOD).rgb;
+	vec2 envBRDF = texture(brdfLUT, vec2(max(dot(N, V), 0.0), roughness)).rg;
+	vec3 specular = prefilteredColor * (F * envBRDF.x + envBRDF.y);
+
+	vec3 ambient = (kD * diffuse + specular) * ao;
 
 	vec3 color = ambient + Lo;
 	// HDR capture

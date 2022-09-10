@@ -151,6 +151,10 @@
     <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="brdf_fs.glsl" />
+    <None Include="brdf_texture_fs.glsl" />
+    <None Include="brdf_texture_vs.glsl" />
+    <None Include="brdf_vs.glsl" />
     <None Include="cubemap_fs.glsl" />
     <None Include="cubemap_vs.glsl" />
     <None Include="deferred_light_box_fs.glsl" />

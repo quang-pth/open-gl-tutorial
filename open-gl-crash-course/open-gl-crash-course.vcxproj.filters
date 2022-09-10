@@ -149,6 +149,18 @@
     <None Include="prefiltered_map_fs.glsl">
       <Filter>Source Files\Specular LBL</Filter>
     </None>
+    <None Include="brdf_vs.glsl">
+      <Filter>Source Files\Specular LBL</Filter>
+    </None>
+    <None Include="brdf_fs.glsl">
+      <Filter>Source Files\Specular LBL</Filter>
+    </None>
+    <None Include="brdf_texture_vs.glsl">
+      <Filter>Source Files\Specular LBL</Filter>
+    </None>
+    <None Include="brdf_texture_fs.glsl">
+      <Filter>Source Files\Specular LBL</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
