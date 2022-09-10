@@ -23,6 +23,27 @@ void renderCube();
 float lerp(float a, float b, float f);
 void renderSphere();
 
+GLenum glCheckError_(const char* file, int line)
+{
+	GLenum errorCode;
+	while ((errorCode = glGetError()) != GL_NO_ERROR)
+	{
+		std::string error;
+		switch (errorCode)
+		{
+		case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
+		case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
+		case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
+		case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
+		case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
+		}
+		std::cout << error << " | " << file << " (" << line << ")" << std::endl;
+	}
+	return errorCode;
+}
+
+#define glCheckError() glCheckError_(__FILE__, __LINE__)
+
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 const unsigned int CUBEMAP_WIDTH = 512;
@@ -56,7 +77,7 @@ int main() {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_SAMPLES, 4);
-
+	
 	// Create GLFW window object
 	GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
 	if (window == NULL) {
@@ -141,7 +162,7 @@ int main() {
 	unsigned int aoMaps[] = {
 		bambooAo,
 		pittedMetalAo,
-		1.0,
+		1u,
 		loadTexture("Textures/Material/gray-granite-flecks-ao.png"),
 	};
 	unsigned int metallicMaps[] = {
@@ -160,7 +181,7 @@ int main() {
 		bambooRoughness,
 		pittedMetalRoughness,
 		loadTexture("Textures/Material/gold-scuffed_roughness.png"),
-		0.0,
+		0u,
 	};
 
 	// Shader
@@ -369,32 +390,39 @@ int main() {
 		glActiveTexture(GL_TEXTURE6);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 		glActiveTexture(GL_TEXTURE7);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, brdfLUTTexture);
+		glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
+		std::cout << glCheckError() << std::endl;
+
 		// Render spheres
 		for (unsigned int row = 0; row < nrRows; row++) 
 		{
 			for (unsigned int col = 0; col < nrColumns; col++) {
 				if (nrColumns == 2) {
-					pbrShader.setInt("AO", false);
+					pbrShader.setBool("AO", false);
+					std::cout << glCheckError() << std::endl;
 				}
 				else {
-					pbrShader.setInt("AO", true);
+					pbrShader.setBool("AO", true);
+					std::cout << glCheckError() << std::endl;
+					glActiveTexture(GL_TEXTURE1);
+					std::cout << glCheckError() << std::endl;
 					glBindTexture(GL_TEXTURE_2D, aoMaps[col]);
-					glActiveTexture(GL_TEXTURE2);
+					std::cout << glCheckError() << std::endl;
 				}
 
 				if (nrColumns == 3) {
-					pbrShader.setInt("isRoughness", false);
+					pbrShader.setBool("isRoughness", false);
 				}
 				else {
-					pbrShader.setInt("isRoughness", true);
+					pbrShader.setBool("isRoughness", true);
 					glActiveTexture(GL_TEXTURE4);
 					glBindTexture(GL_TEXTURE_2D, roughnessMaps[col]);
 				}
+				std::cout << glCheckError() << std::endl;
 
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, albedoMaps[col]);
-				glActiveTexture(GL_TEXTURE1);
+				glActiveTexture(GL_TEXTURE2);
 				glBindTexture(GL_TEXTURE_2D, metallicMaps[col]);
 				glActiveTexture(GL_TEXTURE3);
 				glBindTexture(GL_TEXTURE_2D, normalMaps[col]);
@@ -406,6 +434,8 @@ int main() {
 				));
 				pbrShader.setMat4("model", model);
 				renderSphere();
+				std::cout << glCheckError() << std::endl;
+
 			}
 		}
 
@@ -421,6 +451,8 @@ int main() {
 			model = glm::translate(model, newPos);
 			model = glm::scale(model, glm::vec3(0.5f));
 			pbrShader.setMat4("model", model);
+			std::cout << glCheckError() << std::endl;
+
 			renderSphere();
 		}
 
@@ -428,14 +460,10 @@ int main() {
 		skyboxShader.setMat4("view", view);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
+		std::cout << glCheckError() << std::endl;
+
 		renderCube();
 		
-		
-	/*	texture2DShader.use();
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-		renderQuad();*/
-
 		glfwSwapBuffers(window);
 		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
