@@ -40,6 +40,9 @@
     <Filter Include="Source Files\Specular LBL">
       <UniqueIdentifier>{55328993-caa0-4157-8ff0-fa702888c0ec}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Font Rendering">
+      <UniqueIdentifier>{9863ebad-6aec-4775-9bf6-211b109d0f18}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -160,6 +163,12 @@
     </None>
     <None Include="brdf_texture_fs.glsl">
       <Filter>Source Files\Specular LBL</Filter>
+    </None>
+    <None Include="font_vs.glsl">
+      <Filter>Source Files\Font Rendering</Filter>
+    </None>
+    <None Include="font_fs.glsl">
+      <Filter>Source Files\Font Rendering</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

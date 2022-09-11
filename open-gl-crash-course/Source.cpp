@@ -1,9 +1,11 @@
 #include<glad/glad.h>
 #include<GLFW/glfw3.h>
-
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+
+#include<ft2build.h>
+#include FT_FREETYPE_H
 
 #include"Shader.h"
 #include"camera.h"
@@ -11,6 +13,7 @@
 
 #include <iostream>
 #include <random>
+#include <unordered_map>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -66,6 +69,56 @@ bool firstMouse = true;
 float deltaTime = 0.0f; // time between current frame and last frame
 float lastFrame = 0.0f; // time of the last frame
 
+struct Character {
+	unsigned int TextureID;
+	glm::ivec2 Size; // Width/height of the glyph
+	glm::ivec2 Bearing; // Offset from the baseline to the left/top of the glyph
+	unsigned int Advance; // Offset to advance to next glype
+};
+
+std::unordered_map<char, Character> characters;
+
+unsigned int textVAO, textVBO;
+
+void RenderText(Shader& shader, std::string text, float x, float y, float scale, glm::vec3 color) {
+	shader.use();
+	shader.setInt("text", 0);
+	shader.setVec3("textColor", color);
+	glBindVertexArray(textVAO);
+	glActiveTexture(GL_TEXTURE0);
+
+	std::string::const_iterator c;
+	for (c = text.begin(); c != text.end(); c++) {
+		Character character = characters[*c];
+		float xpos = x + character.Bearing.x * scale;
+		float ypos = y - (character.Size.y - character.Bearing.y) * scale;
+
+		float w = character.Size.x * scale;
+		float h = character.Size.y * scale;
+		// Update VBO
+		float vertices[6][4] = {
+			{xpos, ypos + h, 0.0f, 0.0f},
+			{xpos, ypos, 0.0f, 1.0f},
+			{xpos + w, ypos, 1.0f, 1.0f},
+
+			{xpos, ypos + h, 0.0f, 0.0f},
+			{xpos + w, ypos, 1.0f, 1.0f},
+			{xpos + w, ypos + h, 1.0f, 0.0f},
+		};
+		glBindTexture(GL_TEXTURE_2D, character.TextureID);
+		glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+		glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		x += (character.Advance >> 6) * scale;
+	}
+
+	glBindVertexArray(0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+
 int main() {
 	glfwInit();
 	/*
@@ -107,8 +160,52 @@ int main() {
 	// -----------------------------
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glEnable(GL_MULTISAMPLE);
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+
+	// Init FreeType library
+	FT_Library ft;
+	if (FT_Init_FreeType(&ft)) {
+		std::cout << "ERROR::FREETYPE: Could not init FreeType library" << std::endl;
+	}
+	// Load the Arial Font as a Face
+	FT_Face face;
+	if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face)) {
+		std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+	}
+	FT_Set_Pixel_Sizes(face, 0, 48);
+	// Generate characters map
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1 /*1 single byte for each glype*/);
+	// Load 128 ASCII characters
+	for (unsigned char c = 0; c < 128; c++) {
+		if (FT_Load_Char(face, c, FT_LOAD_RENDER /*create an 8 bit grayscale bitmap image*/)) {
+			std::cout << "ERROR::FREETYPE: Failed to load Glyph" << std::endl;
+			continue;
+		}
+		unsigned int texture;
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RED,
+			face->glyph->bitmap.width, face->glyph->bitmap.rows, 0, GL_RED, GL_UNSIGNED_BYTE,
+			face->glyph->bitmap.buffer);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		// Store the character
+		Character character = {
+			texture,
+			glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
+			glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
+			face->glyph->advance.x,
+		};
+		characters.insert(std::pair<char, Character>(c, character));
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
+	FT_Done_Face(face);
+	FT_Done_FreeType(ft);
 
 	// Cubemap capture Framebuffer
 	unsigned int captureFBO, captureRBO;
@@ -191,7 +288,8 @@ int main() {
 	Shader irredianceShader("irrediance_map_vs.glsl", "irrediance_map_fs.glsl"); // Pre-compute the lighting map IBL
 	Shader prefilteredShader("prefiltered_map_vs.glsl", "prefiltered_map_fs.glsl"); // Pre-filter the lighting map IBL
 	Shader brdfShader("brdf_vs.glsl", "brdf_fs.glsl"); // Create BRDF texture
-	Shader texture2DShader("brdf_texture_vs.glsl", "brdf_texture_fs.glsl");
+	//Shader texture2DShader("brdf_texture_vs.glsl", "brdf_texture_fs.glsl");
+	Shader textRenderShader("font_vs.glsl", "font_fs.glsl");
 
 	// Converting HDR image to cubemap texture
 	glm::mat4 captureProjection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, 10.0f);
@@ -347,8 +445,20 @@ int main() {
 	skyboxShader.use();
 	skyboxShader.setMat4("projection", projection);
 	skyboxShader.setInt("environmentMap", 0);
-	texture2DShader.use();
-	texture2DShader.setInt("brdfTexture", 0);
+	
+	// Text Rendering projection
+	glm::mat4 orthoProjection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
+	glGenVertexArrays(1, &textVAO);
+	glGenBuffers(1, &textVBO);
+	glBindVertexArray(textVAO);
+	glBindBuffer(GL_ARRAY_BUFFER, textVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), 0);
+	glBindBuffer(GL_ARRAY_BUFFER, 0);
+	glBindVertexArray(0);
+	textRenderShader.use();
+	textRenderShader.setMat4("projection", orthoProjection);
 
 	// Lights
 	glm::vec3 lightPositions[] = {
@@ -391,7 +501,6 @@ int main() {
 		glBindTexture(GL_TEXTURE_CUBE_MAP, prefilterMap);
 		glActiveTexture(GL_TEXTURE7);
 		glBindTexture(GL_TEXTURE_2D, brdfLUTTexture);
-		std::cout << glCheckError() << std::endl;
 
 		// Render spheres
 		for (unsigned int row = 0; row < nrRows; row++) 
@@ -399,15 +508,11 @@ int main() {
 			for (unsigned int col = 0; col < nrColumns; col++) {
 				if (nrColumns == 2) {
 					pbrShader.setBool("AO", false);
-					std::cout << glCheckError() << std::endl;
 				}
 				else {
 					pbrShader.setBool("AO", true);
-					std::cout << glCheckError() << std::endl;
 					glActiveTexture(GL_TEXTURE1);
-					std::cout << glCheckError() << std::endl;
 					glBindTexture(GL_TEXTURE_2D, aoMaps[col]);
-					std::cout << glCheckError() << std::endl;
 				}
 
 				if (nrColumns == 3) {
@@ -418,7 +523,6 @@ int main() {
 					glActiveTexture(GL_TEXTURE4);
 					glBindTexture(GL_TEXTURE_2D, roughnessMaps[col]);
 				}
-				std::cout << glCheckError() << std::endl;
 
 				glActiveTexture(GL_TEXTURE0);
 				glBindTexture(GL_TEXTURE_2D, albedoMaps[col]);
@@ -434,8 +538,6 @@ int main() {
 				));
 				pbrShader.setMat4("model", model);
 				renderSphere();
-				std::cout << glCheckError() << std::endl;
-
 			}
 		}
 
@@ -451,7 +553,6 @@ int main() {
 			model = glm::translate(model, newPos);
 			model = glm::scale(model, glm::vec3(0.5f));
 			pbrShader.setMat4("model", model);
-			std::cout << glCheckError() << std::endl;
 
 			renderSphere();
 		}
@@ -460,12 +561,16 @@ int main() {
 		skyboxShader.setMat4("view", view);
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, envCubemap);
-		std::cout << glCheckError() << std::endl;
-
 		renderCube();
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		RenderText(textRenderShader, std::to_string(1 / deltaTime) + "FPS", 25.0f, 25.0f,
+			1.0f, glm::vec3(0.5f, 0.8f, 0.3f));
 		
+		RenderText(textRenderShader, "(C) From FreeType Lib", 540.0f, 570.0f,
+			0.5f, glm::vec3(0.3f, 0.7f, 0.9f));
+
 		glfwSwapBuffers(window);
-		// Trigger keyboard input or mouse events => update window state
 		glfwPollEvents();
 	}
 
