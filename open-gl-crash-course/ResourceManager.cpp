@@ -97,7 +97,6 @@ Texture2D ResourceManager::LoadTextureFromFile(const char* file, bool alpha)
 		texture.InternalFormat = GL_RGBA;
 		texture.ImageFormat = GL_RGBA;
 	}
-	stbi_set_flip_vertically_on_load(true);
 	int width, height, nrChannels;
 	unsigned char* data = stbi_load(file, &width, &height, &nrChannels, 0);
 	if (data) {
@@ -121,7 +120,6 @@ Texture2D ResourceManager::LoadTextureFromFile(const char* file, bool alpha)
 		std::cout << "====================TEXTURE==================" << std::endl;
 	}
 
-	stbi_set_flip_vertically_on_load(false);
 	stbi_image_free(data);
 	return texture;
 }

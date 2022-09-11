@@ -1,5 +1,8 @@
 #pragma once
 
+#include "SpriteRenderer.h"
+#include "ResourceManager.h"
+
 enum GameState {
 	GAME_ACTIVE,
 	GAME_MENU,
@@ -21,5 +24,9 @@ public:
 	void ProcessInput(float dt);
 	void Update(float dt);
 	void Render();
+private:
+	SpriteRenderer* spriteRenderer;
+	std::string shaderName = "sprite";
+	std::string spriteName = "sprite";
 };
 

@@ -43,6 +43,12 @@
     <Filter Include="Source Files\Font Rendering">
       <UniqueIdentifier>{9863ebad-6aec-4775-9bf6-211b109d0f18}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Game">
+      <UniqueIdentifier>{eb80bd01-3ad1-4cdd-8b31-79dc2daa2e73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Game\Sprite">
+      <UniqueIdentifier>{ec56e773-088c-499d-b5ce-17bcdf375f54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -73,6 +79,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ResourceManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -179,6 +188,12 @@
     <None Include="font_fs.glsl">
       <Filter>Source Files\Font Rendering</Filter>
     </None>
+    <None Include="sprite_vs.glsl">
+      <Filter>Source Files\Game\Sprite</Filter>
+    </None>
+    <None Include="sprite_fs.glsl">
+      <Filter>Source Files\Game\Sprite</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -203,6 +218,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ResourceManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
