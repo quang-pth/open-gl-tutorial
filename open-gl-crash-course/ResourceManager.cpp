@@ -6,7 +6,9 @@ std::unordered_map<std::string, Texture2D> ResourceManager::Texture2Ds;
 
 Shader& ResourceManager::LoadShader(const char* vertexPath, const char* fragmentPath, const char* geometryPath, const std::string& name)
 {
-	Shaders[name] = LoadShaderFromFile(vertexPath, fragmentPath, geometryPath);
+	if (Shaders.find(name) == Shaders.end()) {
+		Shaders[name] = LoadShaderFromFile(vertexPath, fragmentPath, geometryPath);
+	}
 	return Shaders[name];
 }
 
@@ -17,13 +19,40 @@ Shader& ResourceManager::GetShader(std::string name)
 
 Texture2D& ResourceManager::LoadTexture(const char* file, bool alpha, std::string name)
 {
-	Texture2Ds[name] = LoadTextureFromFile(file, alpha);
+	if (Texture2Ds.find(name) == Texture2Ds.end()) {
+		Texture2Ds[name] = LoadTextureFromFile(file, alpha);
+	}
 	return Texture2Ds[name];
 }
 
 Texture2D& ResourceManager::GetTexture(std::string name)
 {
 	return Texture2Ds[name];
+}
+
+std::vector<std::vector<unsigned int>> ResourceManager::LoadLevel(const char* file)
+{
+	std::string line;
+	std::ifstream fstream(file);
+	
+	unsigned int tileCode;
+	std::vector<std::vector<unsigned int>> tileData = std::vector<std::vector<unsigned int>>();
+	
+	if (!fstream.is_open())
+	{
+		std::cerr << "Could not open the file - '" << file << "'" << std::endl;
+	}
+
+	while (std::getline(fstream, line, '\n')) {
+		std::istringstream sstream(line);
+		std::vector<unsigned int> row;
+		while (sstream >> tileCode) {
+			row.push_back(tileCode);
+		}
+		tileData.push_back(row);
+	}
+
+	return tileData;
 }
 
 void ResourceManager::Clear()
@@ -87,7 +116,6 @@ Shader ResourceManager::LoadShaderFromFile(const char* vertexPath, const char* f
 	const char* gShaderCode = geometryCode.c_str();
 	
 	return Shader(vShaderCode, fShaderCode, geometryPath != nullptr ? gShaderCode : nullptr);
-
 }
 
 Texture2D ResourceManager::LoadTextureFromFile(const char* file, bool alpha)

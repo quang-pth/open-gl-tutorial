@@ -21,6 +21,8 @@ public:
 	// Texture
 	static Texture2D& LoadTexture(const char* file, bool alpha, std::string name);
 	static Texture2D& GetTexture(std::string name);
+	// Game Level
+	static std::vector<std::vector<unsigned int>> LoadLevel(const char* file);
 	static void Clear();
 private:
 	// Implement Singleton pattern
