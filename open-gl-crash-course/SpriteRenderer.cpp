@@ -27,8 +27,6 @@ void SpriteRenderer::DrawSprite(Texture2D& texture, glm::vec2 position, glm::vec
 	this->shader.setVec3("spriteColor", color);
 	// Draw sprite
 	glBindVertexArray(this->quadVAO);
-	glActiveTexture(GL_TEXTURE0);
-	//std::cout << texture.ID << std::endl;
 	texture.Bind();
 	glDrawArrays(GL_TRIANGLES, 0, 6);
 	glBindVertexArray(0);

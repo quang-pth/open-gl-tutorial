@@ -20,6 +20,7 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
 GLenum glCheckError_(const char* file, int line)
 {
@@ -83,6 +84,8 @@ int main() {
 	glfwSetCursorPosCallback(window, mouse_callback);
 	// Register the mouse scroll callback
 	glfwSetScrollCallback(window, scroll_callback);
+	// Get key callback
+	glfwSetKeyCallback(window, key_callback);
 
 	// Hide the cursor and capture it
 	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -107,7 +110,6 @@ int main() {
 		deltaTime = currentFrame - lastFrame;
 		lastFrame = currentFrame;
 		
-		processInput(window);
 		// Receive user inputs
 		game.ProcessInput(deltaTime);
 
@@ -155,22 +157,17 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 	camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
-void processInput(GLFWwindow* window) {
+void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode) {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
-	// KEY PRESS
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
-		game.Keys[GLFW_KEY_A] = true;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
-		game.Keys[GLFW_KEY_D] = true;
-	}
-	// KEY RELEASE
-	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_RELEASE) {
-		game.Keys[GLFW_KEY_A] = false;
-	}
-	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE) {
-		game.Keys[GLFW_KEY_D] = false;
+
+	if (key >= 0 && key <= 1024) {
+		if (action == GLFW_PRESS) {
+			game.Keys[key] = true;
+		}
+		else if (action == GLFW_RELEASE) {
+			game.Keys[key] = false;
+		}
 	}
 }
