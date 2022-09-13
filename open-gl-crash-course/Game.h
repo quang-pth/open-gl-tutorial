@@ -4,6 +4,8 @@
 #include "ResourceManager.h"
 #include "Setting.h"
 #include "GameLevel.h"
+#include<stdexcept>
+#include <GLFW/glfw3.h>
 
 enum GameState {
 	GAME_ACTIVE,
@@ -31,5 +33,9 @@ public:
 	void Render();
 private:
 	SpriteRenderer* spriteRenderer;
+	// Player
+	GameObject* player;
+	const glm::vec2 PLAYER_SIZE = glm::vec2(100.0f, 20.0f);
+	const float PLAYER_VELOCITY = 500.0f;
 };
 

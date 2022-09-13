@@ -8,13 +8,13 @@ public:
 	// Screen resolution
 	static unsigned int SCR_WIDTH;
 	static unsigned int SCR_HEIGHT;
-
 	// Name
 	static std::string faceName;
 	static std::string backgroundName;
 	static std::string solidBrickName;
 	static std::string normalBrickName;
 	static std::string levelShaderName;
+	static std::string paddleName;
 	// File paths
 	static const char* faceFilePath;
 	static const char* backgroundFilePath;
@@ -24,5 +24,8 @@ public:
 	static const char* levelTwoFilePath;
 	static const char* levelThreeFilePath;
 	static const char* levelFourFilePath;
+	static const char* paddleFilePath;
+private:
+	Setting() {};
 };
 

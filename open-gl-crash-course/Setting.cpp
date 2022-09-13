@@ -10,6 +10,7 @@ std::string Setting::backgroundName = "background";
 std::string Setting::solidBrickName = "block_solid";
 std::string Setting::normalBrickName = "block";
 std::string Setting::levelShaderName = "levelShader";
+std::string Setting::paddleName = "paddle";
 
 // File paths
 const char* Setting::faceFilePath = "Textures/awesomeface.png";
@@ -20,3 +21,4 @@ const char* Setting::levelOneFilePath = "Levels/one.lvl";
 const char* Setting::levelTwoFilePath = "Levels/two.lvl";
 const char* Setting::levelThreeFilePath = "Levels/three.lvl";
 const char* Setting::levelFourFilePath = "Levels/four.lvl";
+const char* Setting::paddleFilePath= "Textures/paddle.png";
