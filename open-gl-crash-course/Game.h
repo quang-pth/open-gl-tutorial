@@ -6,12 +6,22 @@
 #include "GameLevel.h"
 #include "BallObject.h"
 #include <GLFW/glfw3.h>
+#include<tuple>
 
 enum GameState {
 	GAME_ACTIVE,
 	GAME_MENU,
 	GAME_WIN
 };
+
+enum Direction {
+	DIR_UP,
+	DIR_RIGHT,
+	DIR_DOWN,
+	DIR_LEFT,
+};
+
+typedef	std::tuple<bool, Direction, glm::vec2> Collision;
 
 class Game
 {
@@ -33,8 +43,12 @@ public:
 	void Render();
 	// Operations
 	bool CheckCollisions(GameObject& obj1, GameObject& obj2);
-	bool CheckCollisions(GameObject& brick, BallObject& ball);
+	Collision CheckCollisions(GameObject& brick, BallObject& ball);
 	void DoCollsions();
+	Direction CalcCollidedDirection(glm::vec2 target);
+	// Reset game
+	void ResetLevel();
+	void ResetPlayer();
 private:
 	SpriteRenderer* spriteRenderer;
 	// Player
@@ -43,7 +57,11 @@ private:
 	const float PLAYER_VELOCITY = 500.0f;
 	// Ball
 	const float BALL_RADIUS = 12.5f;
-	const glm::vec2 BALL_VELOCITY = glm::vec2(100.0f, -278.0f);
+	const glm::vec2 BALL_VELOCITY = glm::vec2(200.0f, -300.0f);
 	BallObject* ball;
+	void doBrickCollision();
+	void doPlayerCollision();
+	void initPlayer();
+	void initBall();
 };
 

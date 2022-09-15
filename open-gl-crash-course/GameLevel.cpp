@@ -38,6 +38,15 @@ bool GameLevel::IsCompleted()
 	return true;
 }
 
+GameLevel GameLevel::ResetBricks()
+{
+	for (GameObject& brick : this->Bricks) {
+		brick.Destroyed = false;
+	}
+
+	return *this;
+}
+
 void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned int levelWidth, unsigned int levelHeight)
 {
 	unsigned int height = tileData.size();

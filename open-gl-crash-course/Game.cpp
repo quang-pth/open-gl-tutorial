@@ -5,13 +5,14 @@ Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Leve
 	this->Width = width;
 	this->Height = height;
 	this->State = GAME_ACTIVE;
-	//std::fill_n(this->Keys, 1024, 1);
 }
 
 Game::~Game()
 {
-	glDeleteShader(ResourceManager::GetShader(Setting::levelShaderName).ID);
+	std::vector<GameLevel>().swap(Levels);
 	delete spriteRenderer;
+	delete player;
+	delete ball;
 }
 
 void Game::Init()
@@ -32,13 +33,9 @@ void Game::Init()
 	ResourceManager::LoadTexture(Setting::ballFilePath, false, Setting::ballName);
 	// Init game attributes
 	this->spriteRenderer = new SpriteRenderer(levelShader);
-	// Init player
-	glm::vec2 playerPosition(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, this->Height - PLAYER_SIZE.y);
-	this->player = new GameObject(playerPosition, PLAYER_SIZE, ResourceManager::GetTexture(Setting::paddleName));
-	// Init ball
-	glm::vec2 ballPos = glm::vec2(this->Width / 2.0f - BALL_RADIUS, this->Height - PLAYER_SIZE.y - BALL_RADIUS);
-	//glm::vec2 ballPos(this->Width / 2.0f, this->Height / 2.0f);
-	this->ball = new BallObject(ballPos, BALL_RADIUS, BALL_VELOCITY, ResourceManager::GetTexture(Setting::ballName));
+	// Init game objects
+	this->initPlayer();
+	this->initBall();
 	// Load levels
 	GameLevel levelOne, levelTwo, levelThree, levelFour;
 	levelOne.LoadFromFile(Setting::levelOneFilePath, this->Width, this->Height / 2);
@@ -50,7 +47,6 @@ void Game::Init()
 	this->Levels.push_back(levelTwo);
 	this->Levels.push_back(levelThree);
 	this->Levels.push_back(levelFour);
-
 	this->CurrentLevel = 0;
 }
 
@@ -98,6 +94,10 @@ void Game::Update(float dt)
 {
 	this->ball->Move(dt, this->Width);
 	this->DoCollsions();
+	if (this->ball->Position.y > Setting::SCR_HEIGHT) {
+		this->ResetLevel();
+		this->ResetPlayer();
+	}
 }
 
 void Game::Render()
@@ -126,7 +126,7 @@ bool Game::CheckCollisions(GameObject& obj1, GameObject& obj2)
 	return xIsCollided && yIsCollided;
 }
 
-bool Game::CheckCollisions(GameObject& brick, BallObject& ball)
+Collision Game::CheckCollisions(GameObject& brick, BallObject& ball)
 {
 	// Ball center vector
 	glm::vec2 ballCenterPoint(ball.Position + ball.Radius);
@@ -134,24 +134,127 @@ bool Game::CheckCollisions(GameObject& brick, BallObject& ball)
 	glm::vec2 brickExtentDim(brick.Size.x / 2.0f, brick.Size.y / 2.0f);
 	glm::vec2 brickCenterPoint(brick.Position + brickExtentDim);
 	// Distance vector
-	glm::vec2 distanceVector = brickCenterPoint - ballCenterPoint;
+	glm::vec2 distanceVector = ballCenterPoint - brickCenterPoint;
 	glm::vec2 clampedDistanceVector = glm::clamp(distanceVector, -brickExtentDim, brickExtentDim);
 	// Closest point
 	glm::vec2 closestPoint = brickCenterPoint + clampedDistanceVector;
 	// Check is collided
-	return glm::length(closestPoint - ballCenterPoint) < ball.Radius;
+	glm::vec2 difference = closestPoint - ballCenterPoint;
+	bool isCollided = glm::length(difference) < ball.Radius;
+	if (isCollided) {
+		return std::make_tuple(isCollided, this->CalcCollidedDirection(difference), difference);
+	}
+	
+	return std::make_tuple(false, DIR_UP, distanceVector);
 }
 
 void Game::DoCollsions()
 {
-	GameLevel *currentGameLevel = &this->Levels[this->CurrentLevel];
+	this->doBrickCollision();
+	this->doPlayerCollision();
+}
+
+Direction Game::CalcCollidedDirection(glm::vec2 target)
+{
+	glm::vec2 basisVector[] = {
+		glm::vec2(0.0f, 1.0f), // UP
+		glm::vec2(1.0f, 0.0f), // RIGHT
+		glm::vec2(0.0f, -1.0f), // DOWN 
+		glm::vec2(-1.0f, 0.0f), // LEFT
+	};
+	// Find the target closest vector
+	unsigned int closestVector = -1;
+	float maxDotProduct = 0.0f;
+	for (unsigned int i = 0; i < sizeof(basisVector) / sizeof(basisVector[0]); i++) {
+		float dotProduct = glm::dot(glm::normalize(target), basisVector[i]);
+		if (dotProduct > maxDotProduct) {
+			maxDotProduct = dotProduct;
+			closestVector = i;
+		}
+	}
+
+	return (Direction)closestVector;
+}
+
+void Game::ResetLevel()
+{
+	if (this->State == GAME_ACTIVE && this->spriteRenderer != nullptr) {
+		this->Levels[this->CurrentLevel].ResetBricks().Draw(*spriteRenderer);
+	}
+}
+
+void Game::ResetPlayer()
+{
+	this->initPlayer();
+	this->initBall();
+}
+
+void Game::doBrickCollision()
+{
+	GameLevel* currentGameLevel = &this->Levels[this->CurrentLevel];
 	for (GameObject& brick : currentGameLevel->Bricks) {
 		if (!brick.Destroyed) {
-			if (this->CheckCollisions(brick, *this->ball)) {
+			Collision collision = CheckCollisions(brick, *this->ball);
+			bool isCollided = std::get<0>(collision);
+			
+			if (isCollided) {
 				if (!brick.IsSolid) {
 					brick.Destroyed = true;
+				};
+
+				Direction collidedDirection = std::get<1>(collision);
+				glm::vec2 collidedVector = std::get<2>(collision);
+
+				if (collidedDirection == DIR_LEFT || collidedDirection == DIR_RIGHT) {
+					this->ball->Velocity.x = -this->ball->Velocity.x;
+
+					float penetration = this->ball->Radius - std::abs(collidedVector.x);
+					if (collidedDirection == DIR_LEFT) {
+						this->ball->Position.x -= penetration;
+					}
+					else {
+						this->ball->Position.x += penetration;
+					}
+				}
+				else if (collidedDirection == DIR_UP || collidedDirection == DIR_DOWN) {
+					this->ball->Velocity.y = -this->ball->Velocity.y;
+
+					float penetration = this->ball->Radius - std::abs(collidedVector.y);
+					if (collidedDirection == DIR_UP) {
+						this->ball->Position.y -= penetration;
+					}
+					else {
+						this->ball->Position.y += penetration;
+					}
 				}
 			}
 		}
 	}
+}
+
+void Game::doPlayerCollision()
+{
+	Collision collision = this->CheckCollisions(*this->player, *this->ball);
+	bool isCollided = std::get<0>(collision);
+	if (isCollided && !this->ball->IsStuck) {
+		float playerCenterPoint = this->player->Position.x + this->player->Size.x / 2.0f;
+		float distanceFromCenter = std::abs(this->ball->Position.x + this->ball->Radius - playerCenterPoint);
+		float pecentage = distanceFromCenter / (this->player->Size.x / 2.0f);
+		float strength = 2.0f;
+		glm::vec2 oldVelocity = this->ball->Velocity;
+		glm::vec2 newVelocity(BALL_VELOCITY.x * strength * pecentage, -1.0f * std::abs(this->ball->Velocity.y));
+		this->ball->Velocity = glm::normalize(newVelocity) * glm::length(oldVelocity);
+	}
+}
+
+void Game::initPlayer()
+{
+	glm::vec2 playerPosition(this->Width / 2.0f - PLAYER_SIZE.x / 2.0f, this->Height - PLAYER_SIZE.y);
+	this->player = new GameObject(playerPosition, PLAYER_SIZE, ResourceManager::GetTexture(Setting::paddleName));
+}
+
+void Game::initBall()
+{
+	glm::vec2 ballPos = glm::vec2(this->Width / 2.0f - BALL_RADIUS, this->Height - PLAYER_SIZE.y - BALL_RADIUS);
+	this->ball = new BallObject(ballPos, BALL_RADIUS, BALL_VELOCITY, ResourceManager::GetTexture(Setting::ballName));
 }

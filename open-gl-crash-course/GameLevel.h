@@ -14,6 +14,7 @@ public:
 	void LoadFromFile(const char* filePath, unsigned int levelWidth, unsigned levelHeight);
 	void Draw(SpriteRenderer& spriteRenderer);
 	bool IsCompleted();
+	GameLevel ResetBricks();
 private:
 	void init(std::vector<std::vector<unsigned int>> tileData, 
 		unsigned int levelWidth, unsigned int levelHeight);
