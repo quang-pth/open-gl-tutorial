@@ -57,7 +57,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned i
 	// Init tiles
 	for (unsigned int row = 0; row < height; row++) {
 		for (unsigned int col = 0; col < width; col++) {
-			// Solid block
+			// Solid blocks
 			if (tileData[row][col] == 1) {
 				glm::vec2 pos(unitWidth * col, unitHeight * row);
 				glm::vec2 size(unitWidth, unitHeight);
@@ -67,7 +67,7 @@ void GameLevel::init(std::vector<std::vector<unsigned int>> tileData, unsigned i
 				tileObject.IsSolid = true;
 				this->Bricks.push_back(tileObject);
 			}
-			// Normal block
+			// Normal blocks
 			else if (tileData[row][col] > 1) {
 				glm::vec3 color = glm::vec3(1.0f); // original: white
 				if (tileData[row][col] == 2)

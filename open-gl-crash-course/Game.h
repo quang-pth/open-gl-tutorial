@@ -5,6 +5,7 @@
 #include "Setting.h"
 #include "GameLevel.h"
 #include "BallObject.h"
+#include "ParticleGenerator.h"
 #include <GLFW/glfw3.h>
 #include<tuple>
 
@@ -56,9 +57,11 @@ private:
 	const glm::vec2 PLAYER_SIZE = glm::vec2(100.0f, 20.0f);
 	const float PLAYER_VELOCITY = 500.0f;
 	// Ball
+	BallObject* ball;
 	const float BALL_RADIUS = 12.5f;
 	const glm::vec2 BALL_VELOCITY = glm::vec2(200.0f, -300.0f);
-	BallObject* ball;
+	// Particle generator
+	ParticleGenerator* particleGenerator;
 	void doBrickCollision();
 	void doPlayerCollision();
 	void initPlayer();

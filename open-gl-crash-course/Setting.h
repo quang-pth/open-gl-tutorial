@@ -15,6 +15,7 @@ public:
 	static std::string normalBrickName;
 	static std::string levelShaderName;
 	static std::string paddleName;
+	static std::string particleName;
 	// File paths
 	static const char* ballFilePath;
 	static const char* backgroundFilePath;
@@ -25,6 +26,10 @@ public:
 	static const char* levelThreeFilePath;
 	static const char* levelFourFilePath;
 	static const char* paddleFilePath;
+	static const char* particleFilePath;
+	// Shader paths
+	static const char* particleVS;
+	static const char* particleFS;
 private:
 	Setting() {};
 };

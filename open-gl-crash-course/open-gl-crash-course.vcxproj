@@ -150,6 +150,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="model.cpp" />
+    <ClCompile Include="ParticleGenerator.cpp" />
     <ClCompile Include="ResourceManager.cpp" />
     <ClCompile Include="Setting.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -180,6 +181,8 @@
     <None Include="LightSourceVertexShader.glsl" />
     <None Include="model_loading_fragment.glsl" />
     <None Include="model_loading_vertex.glsl" />
+    <None Include="particle_fs.glsl" />
+    <None Include="particle_vs.glsl" />
     <None Include="pbr_fs.glsl" />
     <None Include="pbr_vs.glsl" />
     <None Include="prefiltered_map_fs.glsl" />
@@ -204,6 +207,7 @@
     <ClInclude Include="GameObject.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="model.h" />
+    <ClInclude Include="ParticleGenerator.h" />
     <ClInclude Include="ResourceManager.h" />
     <ClInclude Include="Setting.h" />
     <ClInclude Include="Shader.h" />

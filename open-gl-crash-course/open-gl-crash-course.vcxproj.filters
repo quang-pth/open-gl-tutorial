@@ -49,6 +49,9 @@
     <Filter Include="Source Files\Game\Sprite">
       <UniqueIdentifier>{ec56e773-088c-499d-b5ce-17bcdf375f54}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Game\Particle">
+      <UniqueIdentifier>{9baf1c2a-fe29-4388-855c-764dab53df8f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source.cpp">
@@ -94,6 +97,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BallObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParticleGenerator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -206,6 +212,12 @@
     <None Include="sprite_fs.glsl">
       <Filter>Source Files\Game\Sprite</Filter>
     </None>
+    <None Include="particle_vs.glsl">
+      <Filter>Source Files\Game\Particle</Filter>
+    </None>
+    <None Include="particle_fs.glsl">
+      <Filter>Source Files\Game\Particle</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shader.h">
@@ -245,6 +257,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="BallObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ParticleGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1,6 +1,6 @@
 #include "Game.h"
 
-Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), CurrentLevel()
+Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), CurrentLevel(), ball(), player()
 {
 	this->Width = width;
 	this->Height = height;
@@ -24,15 +24,20 @@ void Game::Init()
 	levelShader.Use();
 	levelShader.setInt("image", 0);
 	levelShader.setMat4("projection", orthoProjection);
+	Shader particleShader = ResourceManager::LoadShader(Setting::particleVS, Setting::particleFS, nullptr, Setting::particleName);
+	particleShader.Use();
+	particleShader.setInt("sprite", 0);
+	particleShader.setMat4("projection", orthoProjection);
 	// Textures
 	ResourceManager::LoadTexture(Setting::backgroundFilePath, false, Setting::backgroundName);
 	ResourceManager::LoadTexture(Setting::ballFilePath, true, Setting::ballName);
 	ResourceManager::LoadTexture(Setting::solidBrickFilePath, false, Setting::solidBrickName);
 	ResourceManager::LoadTexture(Setting::normalBrickFilePath, false, Setting::normalBrickName);
 	ResourceManager::LoadTexture(Setting::paddleFilePath, false, Setting::paddleName);
-	ResourceManager::LoadTexture(Setting::ballFilePath, false, Setting::ballName);
+	ResourceManager::LoadTexture(Setting::particleFilePath, true, Setting::particleName);
 	// Init game attributes
 	this->spriteRenderer = new SpriteRenderer(levelShader);
+	this->particleGenerator = new ParticleGenerator(particleShader, ResourceManager::GetTexture(Setting::particleName));
 	// Init game objects
 	this->initPlayer();
 	this->initBall();
@@ -98,6 +103,7 @@ void Game::Update(float dt)
 		this->ResetLevel();
 		this->ResetPlayer();
 	}
+	this->particleGenerator->Update(dt, *this->ball, glm::vec2(this->ball->Radius / 2.0f));
 }
 
 void Game::Render()
@@ -105,7 +111,7 @@ void Game::Render()
 	// Draw game levels
 	if (this->State == GAME_ACTIVE) {
 		if (this->player == nullptr || this->spriteRenderer == nullptr || this->ball == nullptr) {
-			std::cout << "ERROR::NULL_REFERCENCES_EXCEPTION in Game.cpp line 80" << std::endl;
+			std::cout << "ERROR::NULL_REFERCENCES_EXCEPTION in Game.cpp line Render()" << std::endl;
 			exit;
 		}
 		this->spriteRenderer->DrawSprite(ResourceManager::GetTexture(Setting::backgroundName),
@@ -113,6 +119,7 @@ void Game::Render()
 		this->Levels[this->CurrentLevel].Draw(*this->spriteRenderer);
 		this->player->Draw(*spriteRenderer);
 		this->ball->Draw(*spriteRenderer);
+		this->particleGenerator->Draw();
 	}
 }
 
