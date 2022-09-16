@@ -30,6 +30,10 @@ public:
 	// Shader paths
 	static const char* particleVS;
 	static const char* particleFS;
+	static const char* postProcessingVS;
+	static const char* postProcessingFS;
+	static const char* postProcessingShaderName;
+
 private:
 	Setting() {};
 };

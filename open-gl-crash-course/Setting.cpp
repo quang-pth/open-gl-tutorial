@@ -28,3 +28,6 @@ const char* Setting::particleFilePath = "Textures/particle.png";
 // Shader paths
 const char* Setting::particleVS = "particle_vs.glsl";
 const char* Setting::particleFS = "particle_fs.glsl";
+const char* Setting::postProcessingVS = "pp_vs.glsl";
+const char* Setting::postProcessingFS = "pp_fs.glsl";
+const char* Setting::postProcessingShaderName = "postProcessing";

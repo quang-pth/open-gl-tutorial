@@ -1,6 +1,6 @@
 #include "Game.h"
 
-Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), CurrentLevel(), ball(), player()
+Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), CurrentLevel(), ball(), player(), postProcessor()
 {
 	this->Width = width;
 	this->Height = height;
@@ -28,6 +28,10 @@ void Game::Init()
 	particleShader.Use();
 	particleShader.setInt("sprite", 0);
 	particleShader.setMat4("projection", orthoProjection);
+	Shader postProcessingShader = ResourceManager::LoadShader(Setting::postProcessingVS, Setting::postProcessingFS, nullptr, Setting::postProcessingShaderName);
+	postProcessingShader.Use();
+	postProcessingShader.setInt("scene", 0);
+	postProcessingShader.setMat4("projection", orthoProjection);
 	// Textures
 	ResourceManager::LoadTexture(Setting::backgroundFilePath, false, Setting::backgroundName);
 	ResourceManager::LoadTexture(Setting::ballFilePath, true, Setting::ballName);
@@ -38,6 +42,7 @@ void Game::Init()
 	// Init game attributes
 	this->spriteRenderer = new SpriteRenderer(levelShader);
 	this->particleGenerator = new ParticleGenerator(particleShader, ResourceManager::GetTexture(Setting::particleName));
+	this->postProcessor = new PostProcessor(postProcessingShader, this->Width, this->Height);
 	// Init game objects
 	this->initPlayer();
 	this->initBall();
@@ -103,6 +108,12 @@ void Game::Update(float dt)
 		this->ResetLevel();
 		this->ResetPlayer();
 	}
+	if (this->shakeTime > 0.0f) {
+		this->shakeTime -= dt;
+		if (this->shakeTime <= 0.0f) {
+			this->postProcessor->Shake = false;
+		}
+	}
 	this->particleGenerator->Update(dt, *this->ball, glm::vec2(this->ball->Radius / 2.0f));
 }
 
@@ -110,16 +121,22 @@ void Game::Render()
 {
 	// Draw game levels
 	if (this->State == GAME_ACTIVE) {
-		if (this->player == nullptr || this->spriteRenderer == nullptr || this->ball == nullptr) {
-			std::cout << "ERROR::NULL_REFERCENCES_EXCEPTION in Game.cpp line Render()" << std::endl;
+		if (this->player == nullptr || this->spriteRenderer == nullptr || this->ball == nullptr || 
+			this->particleGenerator == nullptr || this->postProcessor == nullptr) 
+		{
+			std::cout << "ERROR::NULL_REFERCENCES_EXCEPTION in Game.cpp function Render()" << std::endl;
 			exit;
 		}
+		
+		this->postProcessor->BeginRender();
 		this->spriteRenderer->DrawSprite(ResourceManager::GetTexture(Setting::backgroundName),
 				glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
 		this->Levels[this->CurrentLevel].Draw(*this->spriteRenderer);
 		this->player->Draw(*spriteRenderer);
 		this->particleGenerator->Draw();
 		this->ball->Draw(*spriteRenderer);
+		this->postProcessor->EndRender();
+		this->postProcessor->Render(glfwGetTime());
 	}
 }
 
@@ -207,7 +224,11 @@ void Game::doBrickCollision()
 			if (isCollided) {
 				if (!brick.IsSolid) {
 					brick.Destroyed = true;
-				};
+				}
+				else {
+					this->shakeTime = 0.05f;
+					this->postProcessor->Shake = true;
+				}
 
 				Direction collidedDirection = std::get<1>(collision);
 				glm::vec2 collidedVector = std::get<2>(collision);

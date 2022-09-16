@@ -6,6 +6,7 @@
 #include "GameLevel.h"
 #include "BallObject.h"
 #include "ParticleGenerator.h"
+#include "PostProcessor.h"
 #include <GLFW/glfw3.h>
 #include<tuple>
 
@@ -62,6 +63,9 @@ private:
 	const glm::vec2 BALL_VELOCITY = glm::vec2(200.0f, -300.0f);
 	// Particle generator
 	ParticleGenerator* particleGenerator;
+	// Post processing
+	PostProcessor* postProcessor;
+	float shakeTime = 0.0f;
 	void doBrickCollision();
 	void doPlayerCollision();
 	void initPlayer();
