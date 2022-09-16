@@ -1,9 +1,7 @@
 #include "ParticleGenerator.h"
 
-ParticleGenerator::ParticleGenerator(Shader& shader, Texture2D& texture) : Particles(), particleVAO()
+ParticleGenerator::ParticleGenerator(Shader& shader, Texture2D& texture) : shader(shader), texture(texture), Particles(), particleVAO()
 {
-	this->shader = &shader;
-	this->texture = &texture;
 	this->initParticles();
 }
 
@@ -22,13 +20,15 @@ void ParticleGenerator::updateParticles(float dt)
 		p.Life -= dt;
 		if (p.Life >= 0) {
 			p.Position -= p.Velocity * dt;
-			p.Color.a -= dt * 2.0f;
+			p.Color.a -= dt * 0.76f;
 		}
 	}
 }
 
 void ParticleGenerator::initParticles()
 {
+
+	// set up mesh and attribute properties
 	unsigned int VBO;
 	float particle_quad[] = {
 		0.0f, 1.0f, 0.0f, 1.0f,
@@ -50,9 +50,9 @@ void ParticleGenerator::initParticles()
 	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 	glBindVertexArray(0);
 
-	for (unsigned int i = 0; i < this->maxParticles; i++) {
+	// create this->amount default particle instances
+	for (unsigned int i = 0; i < this->maxParticles; ++i)
 		this->Particles.push_back(Particle());
-	}
 }
 
 void ParticleGenerator::Update(float dt, GameObject &gameObject, glm::vec2 offset)
@@ -89,24 +89,27 @@ void ParticleGenerator::RespawnParticle(Particle& particle, GameObject& gameObje
 	float rColor = 0.5f + ((rand() % 100) / 100.0f);
 	particle.Position = gameObject.Position + random + offset;
 	particle.Color = glm::vec4(rColor, rColor, rColor, 1.0f);
-	particle.Life = 1.0f;
-	particle.Velocity = gameObject.Velocity * 0.5f;
+	particle.Life = 1.5f;
+	particle.Velocity = gameObject.Velocity * 0.1f;
 }
 
 void ParticleGenerator::Draw()
 {
+	// use additive blending to give it a 'glow' effect
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
-	this->shader->Use();
-	for (Particle& particle : this->Particles) {
-		if (particle.Life > 0.0f) {
-			this->shader->setVec2("offset", particle.Position);
-			this->shader->setVec4("color", particle.Color);
-			this->texture->Bind();
-			glActiveTexture(GL_TEXTURE0);
+	this->shader.Use();
+	for (Particle &particle : this->Particles)
+	{
+		if (particle.Life > 0.0f)
+		{
+			this->shader.setVec2("offset", particle.Position);
+			this->shader.setVec4("color", particle.Color);
+			this->texture.Bind();
 			glBindVertexArray(this->particleVAO);
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			glBindVertexArray(0);
 		}
 	}
+	// don't forget to reset to default blending mode
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }

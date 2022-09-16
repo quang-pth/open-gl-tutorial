@@ -14,14 +14,14 @@ class ParticleGenerator
 {
 public:
 	std::vector<Particle> Particles;
-	ParticleGenerator(Shader& shader, Texture2D &texture);
+	ParticleGenerator(Shader& shader, Texture2D& texture);
 	void Update(float dt, GameObject &gameObject, glm::vec2 offset);
 	unsigned int GetUnusedParticle();
 	void RespawnParticle(Particle& particle, GameObject& gameObject, glm::vec2 offset);
 	void Draw();
 private:
-	Shader* shader;
-	Texture2D* texture;
+	Shader shader;
+	Texture2D texture;
 	unsigned int maxParticles = 500;
 	unsigned int newParticlesPerFrame = 2;
 	unsigned int lastUnusedIdx = 0;

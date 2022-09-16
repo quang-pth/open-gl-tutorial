@@ -118,8 +118,8 @@ void Game::Render()
 				glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
 		this->Levels[this->CurrentLevel].Draw(*this->spriteRenderer);
 		this->player->Draw(*spriteRenderer);
-		this->ball->Draw(*spriteRenderer);
 		this->particleGenerator->Draw();
+		this->ball->Draw(*spriteRenderer);
 	}
 }
 
