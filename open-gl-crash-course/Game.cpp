@@ -39,6 +39,12 @@ void Game::Init()
 	ResourceManager::LoadTexture(Setting::normalBrickFilePath, false, Setting::normalBrickName);
 	ResourceManager::LoadTexture(Setting::paddleFilePath, false, Setting::paddleName);
 	ResourceManager::LoadTexture(Setting::particleFilePath, true, Setting::particleName);
+	ResourceManager::LoadTexture(Setting::powerUpChaosFilePath, true, Setting::powerUpChaosName);
+	ResourceManager::LoadTexture(Setting::powerUpConfuseFilePath, true, Setting::powerUpConfuseName);
+	ResourceManager::LoadTexture(Setting::powerUpIncreaseFilePath, true, Setting::powerUpIncreaseName);
+	ResourceManager::LoadTexture(Setting::powerUpPassthroughFilePath, true, Setting::powerUpPassthroughName);
+	ResourceManager::LoadTexture(Setting::powerUpSpeedFilePath, true, Setting::powerUpSpeedName);
+	ResourceManager::LoadTexture(Setting::powerUpStickyFilePath, true, Setting::powerUpStickyName);
 	// Init game attributes
 	this->spriteRenderer = new SpriteRenderer(levelShader);
 	this->particleGenerator = new ParticleGenerator(particleShader, ResourceManager::GetTexture(Setting::particleName));
@@ -115,6 +121,7 @@ void Game::Update(float dt)
 		}
 	}
 	this->particleGenerator->Update(dt, *this->ball, glm::vec2(this->ball->Radius / 2.0f));
+	this->UpdatePowerUps(dt);
 }
 
 void Game::Render()
@@ -133,6 +140,12 @@ void Game::Render()
 				glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
 		this->Levels[this->CurrentLevel].Draw(*this->spriteRenderer);
 		this->player->Draw(*spriteRenderer);
+		// Powerups
+		for (PowerUp& powerUp : this->PowerUps) {
+			if (!powerUp.Destroyed) {
+				powerUp.Draw(*this->spriteRenderer);
+			}
+		}
 		this->particleGenerator->Draw();
 		this->ball->Draw(*spriteRenderer);
 		this->postProcessor->EndRender();
@@ -213,9 +226,153 @@ void Game::ResetPlayer()
 	this->initBall();
 }
 
+void Game::SpawnPowerUps(GameObject& block)
+{
+	unsigned int positiveChance = 50;
+	unsigned int negativeChance = 15;
+	// Paddle increase powerup
+	if (this->shouldSpawn(positiveChance)) {
+		PowerUps.push_back(PowerUp(Setting::powerUpIncreaseName, glm::vec3(1.0f, 0.6f, 0.4f),
+			3.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpIncreaseName)));
+	}
+	// Passthrough powerup
+	if (this->shouldSpawn(positiveChance)) {
+		PowerUps.push_back(PowerUp(Setting::powerUpPassthroughName, glm::vec3(0.5f, 1.0f, 0.5f),
+			4.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpPassthroughName)));
+	}
+	// Speed powerup
+	if (this->shouldSpawn(positiveChance)) {
+		PowerUps.push_back(PowerUp(Setting::powerUpSpeedName, glm::vec3(0.5f, 0.5f, 1.0f),
+			5.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpSpeedName)));
+	}
+	// Sticky powerup
+	if (this->shouldSpawn(positiveChance)) {
+		PowerUps.push_back(PowerUp(Setting::powerUpStickyName, glm::vec3(1.0f, 0.5f, 1.0f),
+			10.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpStickyName)));
+	}
+	// Chaos effect
+	if (this->shouldSpawn(negativeChance)) {
+		PowerUps.push_back(PowerUp(Setting::powerUpChaosName, glm::vec3(0.9f, 0.25f, 0.25f),
+			5.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpChaosName)));
+	}
+	// Confuse effect
+	if (this->shouldSpawn(negativeChance)) {
+		PowerUps.push_back(PowerUp(Setting::powerUpConfuseName, glm::vec3(1.0f, 0.3f, 0.3f),
+			4.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpConfuseName)));
+	}
+}
+
+void Game::UpdatePowerUps(float dt)
+{
+	for (unsigned int i = 0; i < this->PowerUps.size(); i++) {
+		this->PowerUps[i].Position += this->PowerUps[i].Velocity * dt;
+
+		if (this->PowerUps[i].Position.y >= this->Height) {
+			this->PowerUps[i].Destroyed = true;
+		}
+
+		if (!this->PowerUps[i].Activated) {
+			continue;
+		}
+
+		this->PowerUps[i].Duration -= dt;
+		if (this->PowerUps[i].Duration <= 0) {
+			this->PowerUps[i].Activated = false;
+			if (this->PowerUps[i].Type == Setting::powerUpStickyName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpStickyName)) {
+					this->ball->Sticky = false;
+					this->ball->Color = glm::vec3(1.0f);
+				}
+			}
+			else if (this->PowerUps[i].Type == Setting::powerUpIncreaseName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpIncreaseName)) {
+					this->player->Size.x -= 50;
+				}
+			}
+			else if (this->PowerUps[i].Type == Setting::powerUpSpeedName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpSpeedName)) {
+					this->ball->Velocity /= 1.2;
+				}
+			}
+			else if (this->PowerUps[i].Type == Setting::powerUpPassthroughName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpPassthroughName)) {
+					this->ball->Passthrough = false;
+					this->ball->Color = glm::vec3(1.0f);
+				}
+			}
+			else if (this->PowerUps[i].Type == Setting::powerUpConfuseName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpConfuseName)) {
+					this->postProcessor->Confuse = false;
+				}
+			}
+			else if (this->PowerUps[i].Type == Setting::powerUpChaosName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpChaosName)) {
+					this->postProcessor->Chaos = false;
+				}
+			}
+		}
+	}
+
+	/*for (PowerUp& powerUp : this->PowerUps) {
+		powerUp.Position += powerUp.Velocity * dt;
+		
+		if (powerUp.Position.y >= this->Height) {
+			powerUp.Destroyed = true;
+		}
+
+		if (!powerUp.Activated) {
+			continue;
+		}
+
+		powerUp.Duration -= dt;
+		if (powerUp.Duration <= 0) {
+			powerUp.Activated = false;
+			if (powerUp.Type == Setting::powerUpStickyName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpStickyName)) {
+					this->ball->Sticky = false;
+					this->ball->Color = glm::vec3(1.0f);
+				}
+			}
+			else if (powerUp.Type == Setting::powerUpIncreaseName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpIncreaseName)) {
+					this->player->Size.x -= 50;
+				}
+			}
+			else if (powerUp.Type == Setting::powerUpSpeedName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpSpeedName)) {
+					this->ball->Velocity /= 1.2;
+				}
+			}
+			else if (powerUp.Type == Setting::powerUpPassthroughName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpPassthroughName)) {
+					this->ball->Passthrough = false;
+					this->ball->Color = glm::vec3(1.0f);
+				}
+			}
+			else if (powerUp.Type == Setting::powerUpConfuseName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpConfuseName)) {
+					this->postProcessor->Confuse = false;
+				}
+			}
+			else if (powerUp.Type == Setting::powerUpChaosName) {
+				if (!this->isOtherPowerUpActivating(Setting::powerUpChaosName)) {
+					this->postProcessor->Chaos = false;
+				}
+			}
+		}
+	}*/
+
+	this->PowerUps.erase(std::remove_if(this->PowerUps.begin(), this->PowerUps.end(),
+		[] (PowerUp& powerUp) {
+			return powerUp.Destroyed && !powerUp.Activated;
+	}
+	), this->PowerUps.end());
+}
+
 void Game::doBrickCollision()
 {
 	GameLevel* currentGameLevel = &this->Levels[this->CurrentLevel];
+	// Calculate brick collision
 	for (GameObject& brick : currentGameLevel->Bricks) {
 		if (!brick.Destroyed) {
 			Collision collision = CheckCollisions(brick, *this->ball);
@@ -224,10 +381,15 @@ void Game::doBrickCollision()
 			if (isCollided) {
 				if (!brick.IsSolid) {
 					brick.Destroyed = true;
+					this->SpawnPowerUps(brick);
 				}
 				else {
 					this->shakeTime = 0.05f;
 					this->postProcessor->Shake = true;
+				}
+
+				if (this->ball->Passthrough && !brick.IsSolid) {
+					continue;
 				}
 
 				Direction collidedDirection = std::get<1>(collision);
@@ -255,6 +417,17 @@ void Game::doBrickCollision()
 						this->ball->Position.y += penetration;
 					}
 				}
+
+			}
+		}
+	}
+	// Calculate powerup collision
+	for (PowerUp& powerUp : this->PowerUps) {
+		if (!powerUp.Destroyed) {
+			if (this->CheckCollisions(*this->player, powerUp)) {
+				this->activatePowerUp(powerUp);
+				powerUp.Destroyed = true;
+				powerUp.Activated = true;
 			}
 		}
 	}
@@ -265,6 +438,7 @@ void Game::doPlayerCollision()
 	Collision collision = this->CheckCollisions(*this->player, *this->ball);
 	bool isCollided = std::get<0>(collision);
 	if (isCollided && !this->ball->IsStuck) {
+		this->ball->IsStuck = this->ball->Sticky;
 		float playerCenterPoint = this->player->Position.x + this->player->Size.x / 2.0f;
 		float distanceFromCenter = std::abs(this->ball->Position.x + this->ball->Radius - playerCenterPoint);
 		float pecentage = distanceFromCenter / (this->player->Size.x / 2.0f);
@@ -285,4 +459,51 @@ void Game::initBall()
 {
 	glm::vec2 ballPos = glm::vec2(this->Width / 2.0f - BALL_RADIUS, this->Height - PLAYER_SIZE.y - BALL_RADIUS);
 	this->ball = new BallObject(ballPos, BALL_RADIUS, BALL_VELOCITY, ResourceManager::GetTexture(Setting::ballName));
+}
+
+bool Game::shouldSpawn(unsigned int chance)
+{
+	unsigned int random = rand() % chance;
+	return random == 0;
+}
+
+void Game::activatePowerUp(PowerUp& powerUp)
+{
+	if (powerUp.Type == Setting::powerUpSpeedName) {
+		this->ball->Velocity *= 1.2;
+	}
+	else if (powerUp.Type == Setting::powerUpStickyName) {
+		this->ball->Sticky = true;
+		this->player->Color = glm::vec3(1.0f, 0.5f, 1.0f);
+	}
+	else if (powerUp.Type == Setting::powerUpPassthroughName) {
+		this->ball->Passthrough = true;
+		this->player->Color = glm::vec3(1.0f, 0.5f, 0.5f);
+	}
+	else if (powerUp.Type == Setting::powerUpIncreaseName) {
+		if (!this->isOtherPowerUpActivating(Setting::powerUpIncreaseName)) {
+			this->player->Size.x += 50;
+		}
+	}
+	else if (powerUp.Type == Setting::powerUpChaosName) {
+		if (!this->postProcessor->Confuse) {
+			this->postProcessor->Chaos = true;
+		}
+	}
+	else if (powerUp.Type == Setting::powerUpConfuseName) {
+		if (!this->postProcessor->Chaos) {
+			this->postProcessor->Confuse = true;
+		}
+	}
+}
+
+bool Game::isOtherPowerUpActivating(std::string type)
+{
+	for (PowerUp& powerUp : this->PowerUps) {
+		if (powerUp.Activated && powerUp.Type == type) {
+			return true;
+		}
+	}
+
+	return false;
 }

@@ -8,6 +8,8 @@ public:
 	float Radius;
 	bool IsStuck;
 	bool IsMoving;
+	bool Sticky;
+	bool Passthrough;
 
 	BallObject();
 	BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D& texture);

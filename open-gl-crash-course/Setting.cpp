@@ -12,6 +12,12 @@ std::string Setting::normalBrickName = "block";
 std::string Setting::levelShaderName = "levelShader";
 std::string Setting::paddleName = "paddle";
 std::string Setting::particleName = "particle";
+std::string Setting::powerUpChaosName = "chaos";
+std::string Setting::powerUpConfuseName = "confuse";
+std::string Setting::powerUpIncreaseName = "increase";
+std::string Setting::powerUpPassthroughName = "passthrough";
+std::string Setting::powerUpSpeedName = "speed";
+std::string Setting::powerUpStickyName = "sticky";
 
 // File paths
 const char* Setting::ballFilePath = "Textures/awesomeface.png";
@@ -24,6 +30,12 @@ const char* Setting::levelThreeFilePath = "Levels/three.lvl";
 const char* Setting::levelFourFilePath = "Levels/four.lvl";
 const char* Setting::paddleFilePath = "Textures/paddle.png";
 const char* Setting::particleFilePath = "Textures/particle.png";
+const char* Setting::powerUpChaosFilePath = "Textures/powerup_chaos.png";
+const char* Setting::powerUpConfuseFilePath = "Textures/powerup_confuse.png";
+const char* Setting::powerUpIncreaseFilePath = "Textures/powerup_increase.png";
+const char* Setting::powerUpPassthroughFilePath = "Textures/powerup_passthrough.png";
+const char* Setting::powerUpSpeedFilePath = "Textures/powerup_speed.png";
+const char* Setting::powerUpStickyFilePath = "Textures/powerup_sticky.png";
 
 // Shader paths
 const char* Setting::particleVS = "particle_vs.glsl";

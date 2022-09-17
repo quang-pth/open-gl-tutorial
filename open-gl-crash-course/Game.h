@@ -7,8 +7,11 @@
 #include "BallObject.h"
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
+#include "PowerUp.h"
 #include <GLFW/glfw3.h>
+
 #include<tuple>
+#include<algorithm>
 
 enum GameState {
 	GAME_ACTIVE,
@@ -33,6 +36,7 @@ public:
 	unsigned int Width, Height;
 	// Game levels
 	std::vector<GameLevel> Levels;
+	std::vector<PowerUp> PowerUps;
 	unsigned int CurrentLevel;
 
 	Game(unsigned int width, unsigned height);
@@ -51,6 +55,9 @@ public:
 	// Reset game
 	void ResetLevel();
 	void ResetPlayer();
+	// Power up
+	void SpawnPowerUps(GameObject& block);
+	void UpdatePowerUps(float dt);
 private:
 	SpriteRenderer* spriteRenderer;
 	// Player
@@ -70,5 +77,9 @@ private:
 	void doPlayerCollision();
 	void initPlayer();
 	void initBall();
+	// Power up
+	bool shouldSpawn(unsigned int chance);
+	void activatePowerUp(PowerUp& powerUp);
+	bool isOtherPowerUpActivating(std::string type);
 };
 

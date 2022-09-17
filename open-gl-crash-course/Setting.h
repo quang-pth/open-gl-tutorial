@@ -16,6 +16,13 @@ public:
 	static std::string levelShaderName;
 	static std::string paddleName;
 	static std::string particleName;
+	static std::string powerUpChaosName;
+	static std::string powerUpConfuseName;
+	static std::string powerUpIncreaseName;
+	static std::string powerUpPassthroughName;
+	static std::string powerUpSpeedName;
+	static std::string powerUpStickyName;
+	
 	// File paths
 	static const char* ballFilePath;
 	static const char* backgroundFilePath;
@@ -27,6 +34,13 @@ public:
 	static const char* levelFourFilePath;
 	static const char* paddleFilePath;
 	static const char* particleFilePath;
+	static const char* powerUpChaosFilePath;
+	static const char* powerUpConfuseFilePath;
+	static const char* powerUpIncreaseFilePath;
+	static const char* powerUpPassthroughFilePath;
+	static const char* powerUpSpeedFilePath;
+	static const char* powerUpStickyFilePath;
+
 	// Shader paths
 	static const char* particleVS;
 	static const char* particleFS;

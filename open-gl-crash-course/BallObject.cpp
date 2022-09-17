@@ -1,12 +1,12 @@
 #include "BallObject.h"
 
-BallObject::BallObject() : Radius(), IsStuck(true), IsMoving(false)
+BallObject::BallObject() : Radius(), IsStuck(true), IsMoving(false), Sticky(false), Passthrough(false)
 {
 }
 
 BallObject::BallObject(glm::vec2 pos, float radius, glm::vec2 velocity, Texture2D& texture)
 	: GameObject(pos, glm::vec2(radius * 2.0f, radius * 2.0f), texture),
-	IsStuck(true), IsMoving(false)
+	IsStuck(true), IsMoving(false), Sticky(false), Passthrough(false)
 {
 	this->Velocity = velocity;
 	this->Radius = radius;
