@@ -36,6 +36,12 @@ const char* Setting::powerUpIncreaseFilePath = "Textures/powerup_increase.png";
 const char* Setting::powerUpPassthroughFilePath = "Textures/powerup_passthrough.png";
 const char* Setting::powerUpSpeedFilePath = "Textures/powerup_speed.png";
 const char* Setting::powerUpStickyFilePath = "Textures/powerup_sticky.png";
+// In game music, sounds
+const char* Setting::backgroundMusicFilePath = "audio/breakout.mp3";
+const char* Setting::solidSoundFilePath = "audio/solid.wav";
+const char* Setting::nonSolidSoundFilePath = "audio/bleep.mp3";
+const char* Setting::powerUpSoundFilePath = "audio/powerup.wav";
+const char* Setting::paddleCollidedSoundFilePath = "audio/bleep.wav";
 
 // Shader paths
 const char* Setting::particleVS = "particle_vs.glsl";

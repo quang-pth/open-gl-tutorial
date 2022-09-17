@@ -22,7 +22,6 @@ public:
 	static std::string powerUpPassthroughName;
 	static std::string powerUpSpeedName;
 	static std::string powerUpStickyName;
-	
 	// File paths
 	static const char* ballFilePath;
 	static const char* backgroundFilePath;
@@ -40,14 +39,18 @@ public:
 	static const char* powerUpPassthroughFilePath;
 	static const char* powerUpSpeedFilePath;
 	static const char* powerUpStickyFilePath;
-
+	// In game music, sounds
+	static const char* backgroundMusicFilePath;
+	static const char* solidSoundFilePath;
+	static const char* nonSolidSoundFilePath;
+	static const char* paddleCollidedSoundFilePath;
+	static const char* powerUpSoundFilePath;
 	// Shader paths
 	static const char* particleVS;
 	static const char* particleFS;
 	static const char* postProcessingVS;
 	static const char* postProcessingFS;
 	static const char* postProcessingShaderName;
-
 private:
 	Setting() {};
 };

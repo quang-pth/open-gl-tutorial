@@ -9,6 +9,7 @@
 #include "PostProcessor.h"
 #include "PowerUp.h"
 #include <GLFW/glfw3.h>
+#include<irrKlang/irrKlang.h>
 
 #include<tuple>
 #include<algorithm>
@@ -55,6 +56,7 @@ public:
 	// Reset game
 	void ResetLevel();
 	void ResetPlayer();
+	void ResetEffects();
 	// Power up
 	void SpawnPowerUps(GameObject& block);
 	void UpdatePowerUps(float dt);
@@ -81,5 +83,6 @@ private:
 	bool shouldSpawn(unsigned int chance);
 	void activatePowerUp(PowerUp& powerUp);
 	bool isOtherPowerUpActivating(std::string type);
+	void drawPowerUps();
 };
 

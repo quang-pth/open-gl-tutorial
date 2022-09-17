@@ -1,5 +1,9 @@
 #include "Game.h"
 
+#pragma comment(lib, "irrKlang.lib")
+
+irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
+
 Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), CurrentLevel(), ball(), player(), postProcessor()
 {
 	this->Width = width;
@@ -13,6 +17,9 @@ Game::~Game()
 	delete spriteRenderer;
 	delete player;
 	delete ball;
+	delete postProcessor;
+	delete particleGenerator;
+	SoundEngine->drop();
 }
 
 void Game::Init()
@@ -64,6 +71,8 @@ void Game::Init()
 	this->Levels.push_back(levelThree);
 	this->Levels.push_back(levelFour);
 	this->CurrentLevel = 0;
+	// Game music
+	SoundEngine->play2D(Setting::backgroundMusicFilePath, true);
 }
 
 void Game::ProcessInput(float dt)
@@ -113,6 +122,7 @@ void Game::Update(float dt)
 	if (this->ball->Position.y > Setting::SCR_HEIGHT) {
 		this->ResetLevel();
 		this->ResetPlayer();
+		this->ResetEffects();
 	}
 	if (this->shakeTime > 0.0f) {
 		this->shakeTime -= dt;
@@ -141,11 +151,7 @@ void Game::Render()
 		this->Levels[this->CurrentLevel].Draw(*this->spriteRenderer);
 		this->player->Draw(*spriteRenderer);
 		// Powerups
-		for (PowerUp& powerUp : this->PowerUps) {
-			if (!powerUp.Destroyed) {
-				powerUp.Draw(*this->spriteRenderer);
-			}
-		}
+		this->drawPowerUps();
 		this->particleGenerator->Draw();
 		this->ball->Draw(*spriteRenderer);
 		this->postProcessor->EndRender();
@@ -226,94 +232,52 @@ void Game::ResetPlayer()
 	this->initBall();
 }
 
+void Game::ResetEffects()
+{
+	this->PowerUps.clear();
+	this->postProcessor->Confuse = false;
+	this->postProcessor->Chaos = false;
+}
+
 void Game::SpawnPowerUps(GameObject& block)
 {
-	unsigned int positiveChance = 50;
-	unsigned int negativeChance = 15;
+	unsigned int positiveChance = 40;
+	unsigned int negativeChance = 20;
 	// Paddle increase powerup
 	if (this->shouldSpawn(positiveChance)) {
 		PowerUps.push_back(PowerUp(Setting::powerUpIncreaseName, glm::vec3(1.0f, 0.6f, 0.4f),
-			3.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpIncreaseName)));
+			10.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpIncreaseName)));
 	}
 	// Passthrough powerup
-	if (this->shouldSpawn(positiveChance)) {
+	else if (this->shouldSpawn(positiveChance)) {
 		PowerUps.push_back(PowerUp(Setting::powerUpPassthroughName, glm::vec3(0.5f, 1.0f, 0.5f),
-			4.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpPassthroughName)));
+			30.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpPassthroughName)));
 	}
 	// Speed powerup
-	if (this->shouldSpawn(positiveChance)) {
+	else if (this->shouldSpawn(positiveChance)) {
 		PowerUps.push_back(PowerUp(Setting::powerUpSpeedName, glm::vec3(0.5f, 0.5f, 1.0f),
-			5.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpSpeedName)));
+			15.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpSpeedName)));
 	}
 	// Sticky powerup
-	if (this->shouldSpawn(positiveChance)) {
+	else if (this->shouldSpawn(positiveChance)) {
 		PowerUps.push_back(PowerUp(Setting::powerUpStickyName, glm::vec3(1.0f, 0.5f, 1.0f),
-			10.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpStickyName)));
+			20.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpStickyName)));
 	}
 	// Chaos effect
-	if (this->shouldSpawn(negativeChance)) {
+	else if (this->shouldSpawn(negativeChance)) {
 		PowerUps.push_back(PowerUp(Setting::powerUpChaosName, glm::vec3(0.9f, 0.25f, 0.25f),
-			5.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpChaosName)));
+			10.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpChaosName)));
 	}
 	// Confuse effect
-	if (this->shouldSpawn(negativeChance)) {
+	else if (this->shouldSpawn(negativeChance)) {
 		PowerUps.push_back(PowerUp(Setting::powerUpConfuseName, glm::vec3(1.0f, 0.3f, 0.3f),
-			4.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpConfuseName)));
+			10.0f, block.Position, ResourceManager::GetTexture(Setting::powerUpConfuseName)));
 	}
 }
 
 void Game::UpdatePowerUps(float dt)
 {
-	for (unsigned int i = 0; i < this->PowerUps.size(); i++) {
-		this->PowerUps[i].Position += this->PowerUps[i].Velocity * dt;
-
-		if (this->PowerUps[i].Position.y >= this->Height) {
-			this->PowerUps[i].Destroyed = true;
-		}
-
-		if (!this->PowerUps[i].Activated) {
-			continue;
-		}
-
-		this->PowerUps[i].Duration -= dt;
-		if (this->PowerUps[i].Duration <= 0) {
-			this->PowerUps[i].Activated = false;
-			if (this->PowerUps[i].Type == Setting::powerUpStickyName) {
-				if (!this->isOtherPowerUpActivating(Setting::powerUpStickyName)) {
-					this->ball->Sticky = false;
-					this->ball->Color = glm::vec3(1.0f);
-				}
-			}
-			else if (this->PowerUps[i].Type == Setting::powerUpIncreaseName) {
-				if (!this->isOtherPowerUpActivating(Setting::powerUpIncreaseName)) {
-					this->player->Size.x -= 50;
-				}
-			}
-			else if (this->PowerUps[i].Type == Setting::powerUpSpeedName) {
-				if (!this->isOtherPowerUpActivating(Setting::powerUpSpeedName)) {
-					this->ball->Velocity /= 1.2;
-				}
-			}
-			else if (this->PowerUps[i].Type == Setting::powerUpPassthroughName) {
-				if (!this->isOtherPowerUpActivating(Setting::powerUpPassthroughName)) {
-					this->ball->Passthrough = false;
-					this->ball->Color = glm::vec3(1.0f);
-				}
-			}
-			else if (this->PowerUps[i].Type == Setting::powerUpConfuseName) {
-				if (!this->isOtherPowerUpActivating(Setting::powerUpConfuseName)) {
-					this->postProcessor->Confuse = false;
-				}
-			}
-			else if (this->PowerUps[i].Type == Setting::powerUpChaosName) {
-				if (!this->isOtherPowerUpActivating(Setting::powerUpChaosName)) {
-					this->postProcessor->Chaos = false;
-				}
-			}
-		}
-	}
-
-	/*for (PowerUp& powerUp : this->PowerUps) {
+	for (PowerUp& powerUp : this->PowerUps) {
 		powerUp.Position += powerUp.Velocity * dt;
 		
 		if (powerUp.Position.y >= this->Height) {
@@ -336,11 +300,13 @@ void Game::UpdatePowerUps(float dt)
 			else if (powerUp.Type == Setting::powerUpIncreaseName) {
 				if (!this->isOtherPowerUpActivating(Setting::powerUpIncreaseName)) {
 					this->player->Size.x -= 50;
+					this->ball->Color = glm::vec3(1.0f);
 				}
 			}
 			else if (powerUp.Type == Setting::powerUpSpeedName) {
 				if (!this->isOtherPowerUpActivating(Setting::powerUpSpeedName)) {
-					this->ball->Velocity /= 1.2;
+					this->ball->Velocity = glm::length(this->BALL_VELOCITY) * glm::normalize(this->ball->Velocity);
+					this->ball->Color = glm::vec3(1.0f);
 				}
 			}
 			else if (powerUp.Type == Setting::powerUpPassthroughName) {
@@ -360,7 +326,7 @@ void Game::UpdatePowerUps(float dt)
 				}
 			}
 		}
-	}*/
+	}
 
 	this->PowerUps.erase(std::remove_if(this->PowerUps.begin(), this->PowerUps.end(),
 		[] (PowerUp& powerUp) {
@@ -382,10 +348,12 @@ void Game::doBrickCollision()
 				if (!brick.IsSolid) {
 					brick.Destroyed = true;
 					this->SpawnPowerUps(brick);
+					SoundEngine->play2D(Setting::nonSolidSoundFilePath, false);
 				}
 				else {
 					this->shakeTime = 0.05f;
 					this->postProcessor->Shake = true;
+					SoundEngine->play2D(Setting::solidSoundFilePath, false);
 				}
 
 				if (this->ball->Passthrough && !brick.IsSolid) {
@@ -428,6 +396,7 @@ void Game::doBrickCollision()
 				this->activatePowerUp(powerUp);
 				powerUp.Destroyed = true;
 				powerUp.Activated = true;
+				SoundEngine->play2D(Setting::powerUpSoundFilePath, false);
 			}
 		}
 	}
@@ -446,6 +415,7 @@ void Game::doPlayerCollision()
 		glm::vec2 oldVelocity = this->ball->Velocity;
 		glm::vec2 newVelocity(BALL_VELOCITY.x * strength * pecentage, -1.0f * std::abs(this->ball->Velocity.y));
 		this->ball->Velocity = glm::normalize(newVelocity) * glm::length(oldVelocity);
+		SoundEngine->play2D(Setting::paddleCollidedSoundFilePath, false);
 	}
 }
 
@@ -506,4 +476,13 @@ bool Game::isOtherPowerUpActivating(std::string type)
 	}
 
 	return false;
+}
+
+void Game::drawPowerUps()
+{
+	for (PowerUp& powerUp : this->PowerUps) {
+		if (!powerUp.Destroyed) {
+			powerUp.Draw(*this->spriteRenderer);
+		}
+	}
 }
