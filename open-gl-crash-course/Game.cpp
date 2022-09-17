@@ -4,11 +4,12 @@
 
 irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
 
-Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), CurrentLevel(), ball(), player(), postProcessor()
+Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), 
+				CurrentLevel(), ball(), player(), postProcessor(), particleGenerator(), KeysProcessed(), textRenderer()
 {
 	this->Width = width;
 	this->Height = height;
-	this->State = GAME_ACTIVE;
+	this->State = GAME_MENU;
 }
 
 Game::~Game()
@@ -56,6 +57,8 @@ void Game::Init()
 	this->spriteRenderer = new SpriteRenderer(levelShader);
 	this->particleGenerator = new ParticleGenerator(particleShader, ResourceManager::GetTexture(Setting::particleName));
 	this->postProcessor = new PostProcessor(postProcessingShader, this->Width, this->Height);
+	this->textRenderer = new TextRenderer(this->Width, this->Height);
+	this->textRenderer->LoadFont(Setting::ocraextFont, 24);
 	// Init game objects
 	this->initPlayer();
 	this->initBall();
@@ -113,6 +116,34 @@ void Game::ProcessInput(float dt)
 			this->ball->IsStuck = false;
 		}
 	}
+	
+	if (this->State == GAME_MENU) {
+		if (this->Keys[GLFW_KEY_ENTER] && !this->KeysProcessed[GLFW_KEY_ENTER]) {
+			this->State = GAME_ACTIVE;
+			this->KeysProcessed[GLFW_KEY_ENTER] = true;
+		}
+		else if (this->Keys[GLFW_KEY_W] && !this->KeysProcessed[GLFW_KEY_W]) {
+			this->CurrentLevel = (this->CurrentLevel + 1) % 4;
+			this->KeysProcessed[GLFW_KEY_W] = true;
+		}
+		else if (this->Keys[GLFW_KEY_S] && !this->KeysProcessed[GLFW_KEY_S]) {
+			if (this->CurrentLevel > 0) {
+				this->CurrentLevel -= 1;
+			}
+			else {
+				this->CurrentLevel = 3;
+			}
+			this->KeysProcessed[GLFW_KEY_S] = true;
+		}
+	}
+
+	if (this->State == GAME_WIN) {
+		if (this->Keys[GLFW_KEY_ENTER] && !this->KeysProcessed[GLFW_KEY_ENTER]) {
+			this->KeysProcessed[GLFW_KEY_ENTER] = true;
+			this->postProcessor->Chaos = false;
+			this->State = GAME_MENU;
+		}
+	}
 }
 
 void Game::Update(float dt)
@@ -120,9 +151,13 @@ void Game::Update(float dt)
 	this->ball->Move(dt, this->Width);
 	this->DoCollsions();
 	if (this->ball->Position.y > Setting::SCR_HEIGHT) {
-		this->ResetLevel();
+		this->Lives -= 1;
+		if (this->Lives == 0) {
+			this->ResetLevel();
+			this->ResetEffects();
+			this->State = GAME_MENU;
+		}
 		this->ResetPlayer();
-		this->ResetEffects();
 	}
 	if (this->shakeTime > 0.0f) {
 		this->shakeTime -= dt;
@@ -132,12 +167,20 @@ void Game::Update(float dt)
 	}
 	this->particleGenerator->Update(dt, *this->ball, glm::vec2(this->ball->Radius / 2.0f));
 	this->UpdatePowerUps(dt);
+
+	if ((this->State == GAME_ACTIVE && this->Levels[this->CurrentLevel].IsCompleted()) || this->State == GAME_WIN) {
+		this->ResetLevel();
+		this->ResetEffects();
+		this->ResetPlayer();
+		this->State == GAME_WIN;
+		this->postProcessor->Chaos = true;
+	}
 }
 
 void Game::Render()
 {
 	// Draw game levels
-	if (this->State == GAME_ACTIVE) {
+	if (this->State == GAME_ACTIVE || this->State == GAME_MENU || this->State == GAME_WIN) {
 		if (this->player == nullptr || this->spriteRenderer == nullptr || this->ball == nullptr || 
 			this->particleGenerator == nullptr || this->postProcessor == nullptr) 
 		{
@@ -150,12 +193,26 @@ void Game::Render()
 				glm::vec2(0.0f, 0.0f), glm::vec2(this->Width, this->Height), 0.0f);
 		this->Levels[this->CurrentLevel].Draw(*this->spriteRenderer);
 		this->player->Draw(*spriteRenderer);
-		// Powerups
 		this->drawPowerUps();
 		this->particleGenerator->Draw();
 		this->ball->Draw(*spriteRenderer);
 		this->postProcessor->EndRender();
 		this->postProcessor->Render(glfwGetTime());
+		std::stringstream ss; 
+		ss << this->Lives;
+		this->textRenderer->RenderText("Lives: " + ss.str(), 5.0f, 5.0f, 1.0f);
+	}
+	if (this->State == GAME_MENU) {
+		this->textRenderer->RenderText("Press ENTER to start", 
+			250.0f, this->Height / 2.0f, 1.0f);
+		this->textRenderer->RenderText("Press W or S to select level", 
+			245.0f, this->Height / 2.0f + 20.0f, 0.75f);
+	}
+	if (this->State == GAME_WIN) {
+		this->textRenderer->RenderText("YOU WON!!!", 320.0f, 
+			this->Height / 2.0f - 20.0f, 1.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+		this->textRenderer->RenderText("Press ENTER to retry or ESC to quit", 130.0f, 
+			this->Height / 2.0f, 1.0f, glm::vec3(1.0f, 1.0f, 0.0f));
 	}
 }
 
@@ -221,9 +278,8 @@ Direction Game::CalcCollidedDirection(glm::vec2 target)
 
 void Game::ResetLevel()
 {
-	if (this->State == GAME_ACTIVE && this->spriteRenderer != nullptr) {
-		this->Levels[this->CurrentLevel].ResetBricks().Draw(*spriteRenderer);
-	}
+	this->Levels[this->CurrentLevel].ResetBricks().Draw(*spriteRenderer);
+	this->Lives = 3;
 }
 
 void Game::ResetPlayer()

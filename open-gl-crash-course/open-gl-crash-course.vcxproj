@@ -159,6 +159,7 @@
     <ClCompile Include="Source.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
     <ClCompile Include="stb_image.cpp" />
+    <ClCompile Include="TextRenderer.cpp" />
     <ClCompile Include="Texture2D.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -172,8 +173,8 @@
     <None Include="deferred_light_box_vs.glsl" />
     <None Include="deferred_shading_fs.glsl" />
     <None Include="deferred_shading_vs.glsl" />
-    <None Include="font_fs.glsl" />
-    <None Include="font_vs.glsl" />
+    <None Include="text_fs.glsl" />
+    <None Include="text_vs.glsl" />
     <None Include="FragmentShader.glsl" />
     <None Include="g_buffer_fs.glsl" />
     <None Include="g_buffer_vs.glsl" />
@@ -219,6 +220,7 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="stb_image.h" />
+    <ClInclude Include="TextRenderer.h" />
     <ClInclude Include="Texture2D.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

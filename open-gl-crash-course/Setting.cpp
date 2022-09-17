@@ -49,3 +49,9 @@ const char* Setting::particleFS = "particle_fs.glsl";
 const char* Setting::postProcessingVS = "pp_vs.glsl";
 const char* Setting::postProcessingFS = "pp_fs.glsl";
 const char* Setting::postProcessingShaderName = "postProcessing";
+const char* Setting::textRenderingVS = "text_vs.glsl";
+const char* Setting::textRenderingFS = "text_fs.glsl";
+const char* Setting::textRenderingShaderName = "textRendering";
+
+// Fonts
+const char* Setting::ocraextFont = "fonts/OCRAEXT.TTF";

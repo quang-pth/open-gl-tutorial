@@ -51,6 +51,11 @@ public:
 	static const char* postProcessingVS;
 	static const char* postProcessingFS;
 	static const char* postProcessingShaderName;
+	static const char* textRenderingVS;
+	static const char* textRenderingFS;
+	static const char* textRenderingShaderName;
+	// Font
+	static const char* ocraextFont;
 private:
 	Setting() {};
 };

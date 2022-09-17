@@ -40,9 +40,6 @@
     <Filter Include="Source Files\Specular LBL">
       <UniqueIdentifier>{55328993-caa0-4157-8ff0-fa702888c0ec}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Font Rendering">
-      <UniqueIdentifier>{9863ebad-6aec-4775-9bf6-211b109d0f18}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\Game">
       <UniqueIdentifier>{eb80bd01-3ad1-4cdd-8b31-79dc2daa2e73}</UniqueIdentifier>
     </Filter>
@@ -54,6 +51,9 @@
     </Filter>
     <Filter Include="Source Files\Game\Post-Processing">
       <UniqueIdentifier>{364a2a8b-96d2-4248-b26f-250aec2f6aaf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Text Rendering">
+      <UniqueIdentifier>{9863ebad-6aec-4775-9bf6-211b109d0f18}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -109,6 +109,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PowerUp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TextRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -209,11 +212,11 @@
     <None Include="brdf_texture_fs.glsl">
       <Filter>Source Files\Specular LBL</Filter>
     </None>
-    <None Include="font_vs.glsl">
-      <Filter>Source Files\Font Rendering</Filter>
+    <None Include="text_vs.glsl">
+      <Filter>Source Files\Text Rendering</Filter>
     </None>
-    <None Include="font_fs.glsl">
-      <Filter>Source Files\Font Rendering</Filter>
+    <None Include="text_fs.glsl">
+      <Filter>Source Files\Text Rendering</Filter>
     </None>
     <None Include="sprite_vs.glsl">
       <Filter>Source Files\Game\Sprite</Filter>
@@ -281,6 +284,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PowerUp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TextRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

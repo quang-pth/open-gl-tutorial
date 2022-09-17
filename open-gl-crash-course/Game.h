@@ -8,6 +8,7 @@
 #include "ParticleGenerator.h"
 #include "PostProcessor.h"
 #include "PowerUp.h"
+#include "TextRenderer.h"
 #include <GLFW/glfw3.h>
 #include<irrKlang/irrKlang.h>
 
@@ -34,46 +35,39 @@ class Game
 public:
 	GameState State;
 	bool Keys[1024];
+	bool KeysProcessed[1024];
 	unsigned int Width, Height;
-	// Game levels
 	std::vector<GameLevel> Levels;
 	std::vector<PowerUp> PowerUps;
 	unsigned int CurrentLevel;
+	unsigned int Lives = 3;
 
 	Game(unsigned int width, unsigned height);
 	~Game();
-	// Init game state
 	void Init();
-	// Game loop
 	void ProcessInput(float dt);
 	void Update(float dt);
 	void Render();
-	// Operations
 	bool CheckCollisions(GameObject& obj1, GameObject& obj2);
 	Collision CheckCollisions(GameObject& brick, BallObject& ball);
 	void DoCollsions();
 	Direction CalcCollidedDirection(glm::vec2 target);
-	// Reset game
 	void ResetLevel();
 	void ResetPlayer();
 	void ResetEffects();
-	// Power up
 	void SpawnPowerUps(GameObject& block);
 	void UpdatePowerUps(float dt);
 private:
 	SpriteRenderer* spriteRenderer;
-	// Player
 	GameObject* player;
 	const glm::vec2 PLAYER_SIZE = glm::vec2(100.0f, 20.0f);
 	const float PLAYER_VELOCITY = 500.0f;
-	// Ball
 	BallObject* ball;
 	const float BALL_RADIUS = 12.5f;
 	const glm::vec2 BALL_VELOCITY = glm::vec2(200.0f, -300.0f);
-	// Particle generator
 	ParticleGenerator* particleGenerator;
-	// Post processing
 	PostProcessor* postProcessor;
+	TextRenderer* textRenderer;
 	float shakeTime = 0.0f;
 	void doBrickCollision();
 	void doPlayerCollision();
