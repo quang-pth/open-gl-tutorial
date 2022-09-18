@@ -1,7 +1,5 @@
 #include "Game.h"
 
-#pragma comment(lib, "irrKlang.lib")
-
 irrklang::ISoundEngine* SoundEngine = irrklang::createIrrKlangDevice();
 
 Game::Game(unsigned int width, unsigned height) : Keys(), spriteRenderer(), Levels(), 
@@ -168,11 +166,11 @@ void Game::Update(float dt)
 	this->particleGenerator->Update(dt, *this->ball, glm::vec2(this->ball->Radius / 2.0f));
 	this->UpdatePowerUps(dt);
 
-	if ((this->State == GAME_ACTIVE && this->Levels[this->CurrentLevel].IsCompleted()) || this->State == GAME_WIN) {
+	if (this->State == GAME_ACTIVE && this->Levels[this->CurrentLevel].IsCompleted()) {
 		this->ResetLevel();
 		this->ResetEffects();
 		this->ResetPlayer();
-		this->State == GAME_WIN;
+		this->State = GAME_WIN;
 		this->postProcessor->Chaos = true;
 	}
 }
@@ -350,6 +348,7 @@ void Game::UpdatePowerUps(float dt)
 			if (powerUp.Type == Setting::powerUpStickyName) {
 				if (!this->isOtherPowerUpActivating(Setting::powerUpStickyName)) {
 					this->ball->Sticky = false;
+					this->ball->Velocity = glm::length(this->BALL_VELOCITY) * glm::normalize(this->ball->Velocity);
 					this->ball->Color = glm::vec3(1.0f);
 				}
 			}
@@ -500,11 +499,11 @@ void Game::activatePowerUp(PowerUp& powerUp)
 	}
 	else if (powerUp.Type == Setting::powerUpStickyName) {
 		this->ball->Sticky = true;
-		this->player->Color = glm::vec3(1.0f, 0.5f, 1.0f);
+		this->ball->Color = glm::vec3(1.0f, 0.5f, 1.0f);
 	}
 	else if (powerUp.Type == Setting::powerUpPassthroughName) {
 		this->ball->Passthrough = true;
-		this->player->Color = glm::vec3(1.0f, 0.5f, 0.5f);
+		this->ball->Color = glm::vec3(1.0f, 0.5f, 0.5f);
 	}
 	else if (powerUp.Type == Setting::powerUpIncreaseName) {
 		if (!this->isOtherPowerUpActivating(Setting::powerUpIncreaseName)) {

@@ -2,9 +2,6 @@
 
 #include"GameObject.h"
 
-//glm::vec2 SIZE = glm::vec2(60.0f, 20.0f);
-//glm::vec2 VELOCITY = glm::vec2(0.0f, 150.0f);
-
 class PowerUp : public GameObject
 {
 public:
